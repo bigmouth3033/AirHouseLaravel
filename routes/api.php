@@ -1,5 +1,8 @@
 <?php
 
+
+use App\Http\Controllers\Api\AuthController;
+use App\Models\PropertyType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +17,25 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
+
+// Route::prefix('v1')->group(function(){
+//     Route::get('booking',[BookingController::class,'getData']);
+//     Route::get('categories',[CategoryController::class,'getData']);
+//     Route::get('districts',[DistrictController::class,'getData']);
+//     Route::get('amenities',[AmenityController::class,'getData']);
+//     Route::get('properties',[PropertyController::class,'getData']);
+//     Route::get('property_emenities',[PropertyAmenityController::class,'getData']);
+//     Route::get('property_images',[PropertyImageController::class,'getData']);
+//     Route::get('property_reviews',[PropertyReviewController::class,'getData']);
+//     Route::get('property_type',[PropertyTypeController::class,'getData']);
+//     Route::get('provinces',[ProvinceController::class,'getData']);
+//     Route::get('room_type',[RoomTypeController::class,'getData']);
+//     Route::get('transactions',[TransactionController::class,'getData']);
+//     Route::get('users',[UserController::class,'getData']);
+// });
+
+
+Route::get("/signup", [AuthController::class, 'signup']);
