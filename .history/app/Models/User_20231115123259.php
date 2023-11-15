@@ -13,20 +13,27 @@ class User extends Model
 
     protected $table = 'users';
     protected $fillable = [
-        // Only the fields listed in the $fillable array can be assigned via the create or update methods with user input.
         'name',
         'email',
         'password',
     ];
-    
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
     protected $hidden = [
-        // Hides sensitive attributes such as passwords and remember tokens.
         'password',
         'remember_token',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
-        // Converts the data type of fields, for example, casting email_verified_at to the datetime type and password to the hashed type.
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];

@@ -13,20 +13,18 @@ class User extends Model
 
     protected $table = 'users';
     protected $fillable = [
-        // Only the fields listed in the $fillable array can be assigned via the create or update methods with user input.
         'name',
         'email',
         'password',
     ];
-    
+    // Xác định các thuộc tính không nên xuất hiện khi mô hình được chuyển đổi thành dạng mảng hoặc JSON.
+    // Ẩn các thuộc tính nhạy cảm như mật khẩu và mã nhớ.
     protected $hidden = [
-        // Hides sensitive attributes such as passwords and remember tokens.
         'password',
         'remember_token',
     ];
 
     protected $casts = [
-        // Converts the data type of fields, for example, casting email_verified_at to the datetime type and password to the hashed type.
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];

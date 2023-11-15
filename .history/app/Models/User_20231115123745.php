@@ -20,13 +20,11 @@ class User extends Model
     ];
     
     protected $hidden = [
-        // Hides sensitive attributes such as passwords and remember tokens.
         'password',
         'remember_token',
     ];
 
     protected $casts = [
-        // Converts the data type of fields, for example, casting email_verified_at to the datetime type and password to the hashed type.
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];

@@ -2,7 +2,6 @@
 
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\GoogleController;
 use App\Models\PropertyType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -40,5 +39,3 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get("/signup", [AuthController::class, 'signup']);
-Route::get('auth/google/url', [GoogleController::class,'loginUrl']);
-Route::get('auth/google/callback', [GoogleController::class,'loginCallback']);

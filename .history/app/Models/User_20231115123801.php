@@ -26,7 +26,6 @@ class User extends Model
     ];
 
     protected $casts = [
-        // Converts the data type of fields, for example, casting email_verified_at to the datetime type and password to the hashed type.
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
