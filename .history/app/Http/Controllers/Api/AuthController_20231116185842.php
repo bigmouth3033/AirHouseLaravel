@@ -18,7 +18,9 @@ class AuthController extends Controller
         $user->date_of_birth = "1997-02-05";
 
         $user->save();
+
         $token = $user->createToken('main')->plainTextToken;
+
         return response(compact('user', 'token'));
     }
 }
