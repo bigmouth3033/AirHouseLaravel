@@ -1,7 +1,8 @@
 <?php
 
-
+use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController;
 use App\Models\PropertyType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,25 +18,25 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+//protected route
+Route::group(['middleware' => ['auth:sanctum']], function () {
 
-// Route::prefix('v1')->group(function(){
-//     Route::get('booking',[BookingController::class,'getData']);
-//     Route::get('categories',[CategoryController::class,'getData']);
-//     Route::get('districts',[DistrictController::class,'getData']);
-//     Route::get('amenities',[AmenityController::class,'getData']);
-//     Route::get('properties',[PropertyController::class,'getData']);
-//     Route::get('property_emenities',[PropertyAmenityController::class,'getData']);
-//     Route::get('property_images',[PropertyImageController::class,'getData']);
-//     Route::get('property_reviews',[PropertyReviewController::class,'getData']);
-//     Route::get('property_type',[PropertyTypeController::class,'getData']);
-//     Route::get('provinces',[ProvinceController::class,'getData']);
-//     Route::get('room_type',[RoomTypeController::class,'getData']);
-//     Route::get('transactions',[TransactionController::class,'getData']);
-//     Route::get('users',[UserController::class,'getData']);
-// });
+  Route::get('/user', function (Request $request) {
+    return $request->user();
+  });
+
+  Route::post('/logout', [UserController::class, 'logout']);
 
 
-Route::get("/signup", [AuthController::class, 'signup']);
+  Route::post('updateAmenties', [AmenityController::class, 'update']);
+  Route::post('createAmenties', [AmenityController::class, 'create']);
+  Route::post('deleteAmenties', [AmenityController::class, 'delete']);
+  Route::post('readAmenties', [AmenityController::class, 'read']);
+});
+
+
+
+
+//public route
+Route::post('/signup', [UserController::class, 'signup']);
+Route::post('/login', [UserController::class, 'login']);
