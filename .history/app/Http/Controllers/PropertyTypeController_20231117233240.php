@@ -19,20 +19,19 @@ class PropertyTypeController extends Controller
         
         $validatedData = $request->validate([
             'name' => 'required|max:50',
-            'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg', 
+            'iconName' => 'required|image|mimes:jpeg,png,jpg,gif,svg', 
         ]);
-        
+
         $PropertyType = new PropertyType;
         $PropertyType->name = $validatedData['name'];
-        
-        $newFileName = 'images_property_type_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
-        
-        $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
+
+        $newFileName = 'images_property_type_' . time() . '_' . $request->file('iconName')->getClientOriginalName();
+
+        $request->file('iconName')->storeAs('public/images/property_type', $newFileName);
+
         $PropertyType->icon_image = $newFileName;
         $PropertyType->save();
-        
-        $newFileName_path=asset('storage/images/property_type/' . $newFileName);
-        $PropertyType->icon_image= $newFileName_path;
+
         return response()->json([
             "success" => true,
             "message" => "A property type created successfully.",
@@ -76,8 +75,6 @@ class PropertyTypeController extends Controller
 
             if ($propertyType->icon_image != null) {
                 $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
-            }else{
-                $propertyType->icon_image =null;
             }
         }
         return response()->json([
@@ -112,10 +109,8 @@ class PropertyTypeController extends Controller
             foreach ($PropertyTypes as $propertyType) {
                 if ($propertyType->icon_image != null) {
                     $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
-                }else{
-                    $propertyType->icon_image=null;
                 }
-                
+                $propertyType->icon_image=null;
             }
             return response()->json([
                 "success" => true,

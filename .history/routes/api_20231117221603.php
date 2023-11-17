@@ -32,18 +32,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   
 });
 //Amenity
-Route::post('/createAmenity', [AmenityController::class, 'create']);
-Route::get('/readAmenity', [AmenityController::class, 'read']);
-Route::post('/updateAmenity', [AmenityController::class, 'update']);
-Route::post('deleteAmenity', [AmenityController::class, 'delete']);
-Route::post('filterByNameAmentiny', [AmenityController::class, 'filterByName']);
+Route::post('/createAmenities', [AmenityController::class, 'create']);
+Route::get('/readAmenities', [AmenityController::class, 'read']);
+Route::post('/updateAmenities', [AmenityController::class, 'update']);
+Route::post('deleteAmenities', [AmenityController::class, 'delete']);
 
 
 Route::post('/createPropertyType', [PropertyTypeController::class, 'create']);
 Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
 Route::post('/updatePropertyType', [PropertyTypeController::class, 'update']);
 Route::post('deletePropertyType', [PropertyTypeController::class, 'delete']);
-Route::post('filterByNamePropertyType', [PropertyTypeController::class, 'filterByName']);
 
 //public route
 Route::post('/signup', [UserController::class, 'signup']);

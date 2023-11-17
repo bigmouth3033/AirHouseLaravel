@@ -19,20 +19,19 @@ class PropertyTypeController extends Controller
         
         $validatedData = $request->validate([
             'name' => 'required|max:50',
-            'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg', 
+            'iconName' => 'required|image|mimes:jpeg,png,jpg,gif,svg', // Adjust validation rules for the image
         ]);
-        
+
         $PropertyType = new PropertyType;
         $PropertyType->name = $validatedData['name'];
-        
-        $newFileName = 'images_property_type_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
-        
-        $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
+
+        $newFileName = 'images_property_type_' . time() . '_' . $request->file('iconName')->getClientOriginalName();
+
+        $request->file('iconName')->storeAs('public/images/property_type', $newFileName);
+
         $PropertyType->icon_image = $newFileName;
         $PropertyType->save();
-        
-        $newFileName_path=asset('storage/images/property_type/' . $newFileName);
-        $PropertyType->icon_image= $newFileName_path;
+
         return response()->json([
             "success" => true,
             "message" => "A property type created successfully.",
@@ -55,13 +54,10 @@ class PropertyTypeController extends Controller
             ], 404);
         }
         $newFileName = 'images_property_type_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
-        $newFileName_path=asset('storage/images/property_type/' . $newFileName);
 
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
-
-
         $updatePropertyType->name = $request->input('name');
-        $updatePropertyType->icon_image = $newFileName_path;
+        $updatePropertyType->icon_image = $newFileName;
         $updatePropertyType->save();
         return response()->json([
             "success" => true,
@@ -72,12 +68,11 @@ class PropertyTypeController extends Controller
     public function read()
     {
         $PropertyType = PropertyType::all();
+
         foreach ($PropertyType as $propertyType) {
 
-            if ($propertyType->icon_image != null) {
+            if ($propertyType->icon_image !== null) {
                 $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
-            }else{
-                $propertyType->icon_image =null;
             }
         }
         return response()->json([
@@ -108,15 +103,13 @@ class PropertyTypeController extends Controller
     public function filterByName(Request $request){
         $name = $request->input("name");
         $PropertyTypes = PropertyType::where('name', 'like', '%' . $name . '%')->get();
-        if ($PropertyTypes) {
-            foreach ($PropertyTypes as $propertyType) {
-                if ($propertyType->icon_image != null) {
-                    $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
-                }else{
-                    $propertyType->icon_image=null;
-                }
-                
+        foreach ($PropertyTypes as $propertyType) {
+
+            if ($propertyType->icon_image !== null) {
+                $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
             }
+        }
+        if ($PropertyTypes) {
             return response()->json([
                 "success" => true,
                 "message" => "",
@@ -125,7 +118,7 @@ class PropertyTypeController extends Controller
         } else {
             return response()->json([
                 "success" => false,
-                "message" => "Property type not found.",
+                "message" => "PropertyType not found.",
             ], 404);
         }
     }

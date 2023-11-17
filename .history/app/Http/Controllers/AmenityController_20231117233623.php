@@ -13,19 +13,18 @@ class AmenityController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|max:50',
-            'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg', 
+            'iconName' => 'required|image|mimes:jpeg,png,jpg,gif,svg', 
         ]);
 
         $Amenity = new Amenity;
         $Amenity->name = $validatedData['name'];
 
-        $newFileName = 'images_amenities_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
-        $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
+        $newFileName = 'images_amenities_' . time() . '_' . $request->file('iconName')->getClientOriginalName();
+        $request->file('iconName')->storeAs('public/images/amenities', $newFileName);
         $Amenity->icon_image = $newFileName;
+
         $Amenity->save();
-        //tra du lieu ve
-        $newFileName_path = asset('storage/images/amenities/' . $newFileName);
-        $Amenity->icon_image= $newFileName_path;
+
         return response()->json([
             "success" => true,
             "message" => "A amenity created successfully.",
@@ -66,7 +65,6 @@ class AmenityController extends Controller
             ], 404);
         }
         $newFileName = 'images_amenities_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
-        $newFileName_path = asset('storage/images/amenities/' . $updateAmenity->icon_image);
         $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
 
         $updateAmenity->name = $request->input('name');

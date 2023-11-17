@@ -19,20 +19,19 @@ class PropertyTypeController extends Controller
         
         $validatedData = $request->validate([
             'name' => 'required|max:50',
-            'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg', 
+            'iconName' => 'required|image|mimes:jpeg,png,jpg,gif,svg', // Adjust validation rules for the image
         ]);
-        
+
         $PropertyType = new PropertyType;
         $PropertyType->name = $validatedData['name'];
-        
-        $newFileName = 'images_property_type_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
-        
-        $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
+
+        $newFileName = 'images_property_type_' . time() . '_' . $request->file('iconName')->getClientOriginalName();
+
+        $request->file('iconName')->storeAs('public/images/property_type', $newFileName);
+
         $PropertyType->icon_image = $newFileName;
         $PropertyType->save();
-        
-        $newFileName_path=asset('storage/images/property_type/' . $newFileName);
-        $PropertyType->icon_image= $newFileName_path;
+
         return response()->json([
             "success" => true,
             "message" => "A property type created successfully.",
@@ -55,13 +54,10 @@ class PropertyTypeController extends Controller
             ], 404);
         }
         $newFileName = 'images_property_type_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
-        $newFileName_path=asset('storage/images/property_type/' . $newFileName);
 
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
-
-
         $updatePropertyType->name = $request->input('name');
-        $updatePropertyType->icon_image = $newFileName_path;
+        $updatePropertyType->icon_image = $newFileName;
         $updatePropertyType->save();
         return response()->json([
             "success" => true,
@@ -71,15 +67,18 @@ class PropertyTypeController extends Controller
     }
     public function read()
     {
+        // Lấy tất cả các bản ghi từ bảng Amenity cùng với quan hệ 'icon_image'
         $PropertyType = PropertyType::all();
-        foreach ($PropertyType as $propertyType) {
 
-            if ($propertyType->icon_image != null) {
+        // Duyệt qua mỗi Amenity và cập nhật đường dẫn 'icon_image'
+        foreach ($PropertyType as $propertyType) {
+            // Kiểm tra xem 'icon_image' có giá trị không trống
+            if ($propertyType->icon_image !== null) {
+                // Tạo đường dẫn mới sử dụng hàm asset và cập nhật thuộc tính 'icon_image'
                 $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
-            }else{
-                $propertyType->icon_image =null;
             }
         }
+        // Trả về phản hồi JSON với thông tin về sự thành công và dữ liệu đã được cập nhật
         return response()->json([
             "success" => true,
             "message" => "All property type.",
@@ -103,30 +102,6 @@ class PropertyTypeController extends Controller
                 "success" => false,
                 "message" => "ID does not exist. Deletion unsuccessful!!!"
             ]);
-        }
-    }
-    public function filterByName(Request $request){
-        $name = $request->input("name");
-        $PropertyTypes = PropertyType::where('name', 'like', '%' . $name . '%')->get();
-        if ($PropertyTypes) {
-            foreach ($PropertyTypes as $propertyType) {
-                if ($propertyType->icon_image != null) {
-                    $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
-                }else{
-                    $propertyType->icon_image=null;
-                }
-                
-            }
-            return response()->json([
-                "success" => true,
-                "message" => "",
-                "data" => $PropertyTypes,
-            ]);
-        } else {
-            return response()->json([
-                "success" => false,
-                "message" => "Property type not found.",
-            ], 404);
         }
     }
 }
