@@ -19,25 +19,29 @@ class CategoryController extends Controller
 
         $validatedData = $request->validate([
             'name' => 'required|string| max:255',
-            'iconName' => 'required|max:200| mines: jpeg, png, jpg, gif, sgv',
+            'iconName' => 'required| mimes: jpeg, png, jpg, gif, svg',
             'description' => 'required|string'
         ]);
 
         //check đầu vào và gán cho các thuộc tính của object Categpry
 
         //cách 1: trực tiếp gán giá trị từ biến $request vào các thuộc tính của đối tượng $Category.
-        // $Category->name = $request->name;    
-        // $Category->icon = $request->iconName;  
-        // $Category->description = $request->description;
+        $Category->name = $request->name;
+        $Category->icon = $request->iconName;
+        $Category->description = $request->description;
 
         //bên trái: tên cột trong database, bên phải trùng key của validate
-        $Category->name = $validatedData['name'];
-        $Category->icon = $validatedData['iconName'];
-        $Category->description = $validatedData['description'];
-
-
+        // $Category->name = $validatedData['name'];
+        // $Category->icon = $validatedData['iconName'];
+        // $Category->description = $validatedData['description'];
 
         $Category->save();
-        return response()->json([""]);
+        return response()->json(
+            [
+                'status' => true,
+                "messege" => "added ok",
+                "object" => $Category
+            ]
+        );
     }
 }
