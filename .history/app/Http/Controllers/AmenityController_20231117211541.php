@@ -34,7 +34,7 @@ class AmenityController extends Controller
 
         return response()->json([
             "success" => true,
-            "message" => "A amenity created successfully.",
+            "message" => "Product created successfully.",
             "data" => $Amenity,
         ]);
     }
@@ -55,7 +55,7 @@ class AmenityController extends Controller
         // Trả về phản hồi JSON với thông tin về sự thành công và dữ liệu đã được cập nhật
         return response()->json([
             "success" => true,
-            "message" => "All amenity.",
+            "message" => "",
             "data" => $Amenities,
         ]);
     }
@@ -72,7 +72,7 @@ class AmenityController extends Controller
         if (!$updateAmenity) {
             return response()->json([
                 "success" => false,
-                "message" => "ID does not exist. Update unsuccessful!!!",
+                "message" => "Amenity not found.",
             ], 404);
         }
         $newFileName = 'images_amenities_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
@@ -84,7 +84,7 @@ class AmenityController extends Controller
         $updateAmenity->save();
         return response()->json([
             "success" => true,
-            "message" => " Amenity have id : ". $id ." updated successfully.",
+            "message" => "",
             "data" => $updateAmenity,
         ]);
     }
@@ -103,7 +103,7 @@ class AmenityController extends Controller
         } else {
             return response()->json([
                 "success" => false,
-                "message" => "ID does not exist. Deletion unsuccessful!!!"
+                "message" => "Id khong ton tai.Xoa khong thanh cong!!!"
             ]);
         }
     }

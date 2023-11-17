@@ -34,47 +34,55 @@ class AmenityController extends Controller
 
         return response()->json([
             "success" => true,
-            "message" => "A amenity created successfully.",
+            "message" => "Product created successfully.",
             "data" => $Amenity,
         ]);
     }
 
-    public function read()
+    public function getImage(Request $request)
     {
-        // Lấy tất cả các bản ghi từ bảng Amenity cùng với quan hệ 'icon_image'
-        $Amenities = Amenity::all();
+        // Assume $filename is the filename stored in your database column
+        $filename = $request->input('filename');
 
-        // Duyệt qua mỗi Amenity và cập nhật đường dẫn 'icon_image'
-        foreach ($Amenities as $amenity) {
-            // Kiểm tra xem 'icon_image' có giá trị không trống
-            if ($amenity->icon_image !== null) {
-                // Tạo đường dẫn mới sử dụng hàm asset và cập nhật thuộc tính 'icon_image'
-                $amenity->icon_image = asset('storage/images/amenities/' . $amenity->icon_image);
-            }
-        }
-        // Trả về phản hồi JSON với thông tin về sự thành công và dữ liệu đã được cập nhật
+        // Create the full URL for the image using Storage::url()
+        // $imageUrl = Storage::url('public/images/amenities/' . $filename);
+        $imageUrl = asset('storage/images/amenities/' . $filename);
+
         return response()->json([
             "success" => true,
-            "message" => "All amenity.",
-            "data" => $Amenities,
+            "message" => "",
+            "data" => $imageUrl,
         ]);
     }
+    public function read()
+    {
+        $Amenities = Amenity::all();
 
+        // Thêm URL của hình ảnh vào mỗi đối tượng Amenities
+        $amenitiesWithUrls = $Amenities->map(function ($amenity) {
+            // Kiểm tra xem có tệp tin ảnh hay không trước khi thêm URL
+            if (Storage::disk('public')->exists($amenity->icon_image)) {
+                $amenity->image_url = Storage::url($amenity->icon_image);
+            } else {
+                $amenity->image_url = null;
+            }
+            return $amenity;
+        });
+        return response()->json([
+            "success" => true,
+            "message" => "",
+            "data" => $amenitiesWithUrls,
+        ]);
+    }
     public function update(Request $request)
     {
         $id = $request->input("id");
         $request->validate([
-            'id' => 'required',
+            'id'=>'required',
             'name' => 'required|max:50',
             'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
         ]);
         $updateAmenity = Amenity::find($id);
-        if (!$updateAmenity) {
-            return response()->json([
-                "success" => false,
-                "message" => "ID does not exist. Update unsuccessful!!!",
-            ], 404);
-        }
         $newFileName = 'images_amenities_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
 
         // Store the file in the public disk with the new file name
@@ -84,27 +92,8 @@ class AmenityController extends Controller
         $updateAmenity->save();
         return response()->json([
             "success" => true,
-            "message" => " Amenity have id : ". $id ." updated successfully.",
+            "message" => "",
             "data" => $updateAmenity,
         ]);
-    }
-    public function delete(Request $request)
-    {
-        $request->validate([
-            'id' => 'required',
-        ]);
-        $id = $request->input("id");
-        if (Amenity::find($id)) {
-            Amenity::find($id)->delete();
-            return response()->json([
-                "success" => true,
-                "message" => "Deleted amenity with ID: " . $id,
-            ]);
-        } else {
-            return response()->json([
-                "success" => false,
-                "message" => "ID does not exist. Deletion unsuccessful!!!"
-            ]);
-        }
     }
 }

@@ -72,7 +72,7 @@ class AmenityController extends Controller
         if (!$updateAmenity) {
             return response()->json([
                 "success" => false,
-                "message" => "ID does not exist. Update unsuccessful!!!",
+                "message" => "ID does not exist. Deletion unsuccessful!!!",
             ], 404);
         }
         $newFileName = 'images_amenities_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();

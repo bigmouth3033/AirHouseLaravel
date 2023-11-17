@@ -36,7 +36,7 @@ Route::get('/readAmenities', [AmenityController::class, 'read']);
 Route::post('/updateAmenities', [AmenityController::class, 'update']);
 Route::get('/getImage', [AmenityController::class, 'getImage']);
 
-Route::post('deleteAmenities', [AmenityController::class, 'delete']);
+Route::get('deleteAmenities', [AmenityController::class, 'delete']);
 
 
 
