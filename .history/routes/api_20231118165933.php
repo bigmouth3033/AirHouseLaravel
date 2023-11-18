@@ -36,7 +36,7 @@ Route::post('/createAmenity', [AmenityController::class, 'create']);
 Route::get('/readAmenity', [AmenityController::class, 'read']);
 Route::post('/updateAmenity', [AmenityController::class, 'update']);
 Route::post('deleteAmenity', [AmenityController::class, 'delete']);
-Route::post('filterByNameAmenity', [AmenityController::class, 'filterByName']);
+Route::post('filterByNameAmentiny', [AmenityController::class, 'filterByName']);
 
 
 Route::post('/createPropertyType', [PropertyTypeController::class, 'create']);

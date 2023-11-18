@@ -29,7 +29,6 @@ class PropertyTypeController extends Controller
         $newFileName = 'images_property_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
         
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
-
         $propertyType->icon_image = $newFileName;
         $propertyType->name = $validatedData['name'];
         $propertyType->save();
@@ -57,7 +56,7 @@ class PropertyTypeController extends Controller
                 "message" => "ID does not exist. Update unsuccessful!!!",
             ], 404);
         }
-        $originFileName = $request->file('icon_image')->getClientOriginalName();
+       $originFileName = $request->file('icon_image')->getClientOriginalName();
         $newFileName = 'images_property_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
         
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\PropertyType;
 use Illuminate\Http\Request;
-use Ramsey\Uuid\Uuid;
 
 class PropertyTypeController extends Controller
 {
@@ -24,14 +23,12 @@ class PropertyTypeController extends Controller
         ]);
         
         $propertyType = new PropertyType;
+        $propertyType->name = $validatedData['name'];
         
-        $originFileName = $request->file('icon_image')->getClientOriginalName();
-        $newFileName = 'images_property_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+        $newFileName = 'images_property_type_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
         
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
-
         $propertyType->icon_image = $newFileName;
-        $propertyType->name = $validatedData['name'];
         $propertyType->save();
         
         $newFileName_path=asset('storage/images/property_type/' . $newFileName);
@@ -57,17 +54,14 @@ class PropertyTypeController extends Controller
                 "message" => "ID does not exist. Update unsuccessful!!!",
             ], 404);
         }
-        $originFileName = $request->file('icon_image')->getClientOriginalName();
-        $newFileName = 'images_property_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
-        $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
-        
-        $updatePropertyType->name = $request->input('name');
-        $updatePropertyType->icon_image = $newFileName;
-        $updatePropertyType->save();
-        
+        $newFileName = 'images_property_type_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
         $newFileName_path=asset('storage/images/property_type/' . $newFileName);
-        $updatePropertyType->icon_image= $newFileName_path;
+
+        $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
+
+        $updatePropertyType->name = $request->input('name');
+        $updatePropertyType->icon_image = $newFileName_path;
+        $updatePropertyType->save();
         return response()->json([
             "success" => true,
             "message" => " Property type have id : ". $id ." updated successfully.",
@@ -76,8 +70,8 @@ class PropertyTypeController extends Controller
     }
     public function read()
     {
-        $propertyType = PropertyType::all();
-        foreach ($propertyType as $propertyType) {
+        $PropertyType = PropertyType::all();
+        foreach ($PropertyType as $propertyType) {
 
             if ($propertyType->icon_image != null) {
                 $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
@@ -88,7 +82,7 @@ class PropertyTypeController extends Controller
         return response()->json([
             "success" => true,
             "message" => "All property type.",
-            "data" => $propertyType,
+            "data" => $PropertyType,
         ],200);
     }
     public function delete(Request $request)
@@ -97,24 +91,23 @@ class PropertyTypeController extends Controller
             'id' => 'required',
         ]);
         $id = $request->input("id");
-        $propertyType = PropertyType::find($id);
-        if ($propertyType) {
-            $propertyType->delete();
+        if (PropertyType::find($id)) {
+            PropertyType::find($id)->delete();
             return response()->json([
                 "success" => true,
                 "message" => "Deleted propertyt type with ID: " . $id,
-            ],200);
+            ]);
         } else {
             return response()->json([
                 "success" => false,
                 "message" => "ID does not exist. Deletion unsuccessful!!!"
-            ],404);
+            ]);
         }
     }
     public function filterByName(Request $request){
         $name = $request->input("name");
         $PropertyTypes = PropertyType::where('name', 'like', '%' . $name . '%')->get();
-        if (count($PropertyTypes) > 0) {
+        if ($PropertyTypes) {
             foreach ($PropertyTypes as $propertyType) {
                 if ($propertyType->icon_image != null) {
                     $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
@@ -125,9 +118,9 @@ class PropertyTypeController extends Controller
             }
             return response()->json([
                 "success" => true,
-                "message" => "All of property type list",
+                "message" => "",
                 "data" => $PropertyTypes,
-            ],200);
+            ]);
         } else {
             return response()->json([
                 "success" => false,

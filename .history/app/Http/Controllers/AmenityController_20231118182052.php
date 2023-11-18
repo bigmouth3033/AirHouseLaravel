@@ -17,22 +17,21 @@ class AmenityController extends Controller
             'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg', 
         ]);
 
-        $amenity = new Amenity;
-        $originFileName = $request->file('icon_image')->getClientOriginalName();
-        $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
-        $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
+        $Amenity = new Amenity;
+        $Amenity->name = $validatedData['name'];
 
-        $amenity->name = $validatedData['name'];
-        $amenity->icon_image = $newFileName;
-        $amenity->save();
-        //lay duong dan cho hinh anh truoc khi tra du lieu ve
+        $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $request->file('icon_image')->getClientOriginalName();
+
+        $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
+        $Amenity->icon_image = $newFileName;
+        $Amenity->save();
+        //tra du lieu ve
         $newFileName_path = asset('storage/images/amenities/' . $newFileName);
-        $amenity->icon_image= $newFileName_path;
+        $Amenity->icon_image= $newFileName_path;
         return response()->json([
             "success" => true,
             "message" => "A amenity created successfully.",
-            "data" => $amenity,
+            "data" => $Amenity,
         ]);
     }
 
@@ -68,17 +67,15 @@ class AmenityController extends Controller
                 "message" => "ID does not exist. Update unsuccessful!!!",
             ], 404);
         }
-        $originFileName = $request->file('icon_image')->getClientOriginalName();
-        $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
+        $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $request->file('icon_image')->getClientOriginalName();
+        $newFileName_path = asset('storage/images/amenities/' . $updateAmenity->icon_image);
         $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
-        
+
         $updateAmenity->name = $request->input('name');
         $updateAmenity->icon_image = $newFileName;
         
         $updateAmenity->save();
         
-        $newFileName_path = asset('storage/images/amenities/' . $updateAmenity->icon_image);
         $updateAmenity->icon_image = $newFileName_path;
         return response()->json([
             "success" => true,
@@ -92,9 +89,8 @@ class AmenityController extends Controller
             'id' => 'required',
         ]);
         $id = $request->input("id");
-        $amenities = Amenity::find($id);
-        if ($amenities) {
-            $amenities->delete();
+        if (Amenity::find($id)) {
+            Amenity::find($id)->delete();
             return response()->json([
                 "success" => true,
                 "message" => "Deleted amenity with ID: " . $id,

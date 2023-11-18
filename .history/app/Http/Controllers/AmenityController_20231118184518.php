@@ -22,11 +22,11 @@ class AmenityController extends Controller
         $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
         
         $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
-
+        
         $amenity->name = $validatedData['name'];
         $amenity->icon_image = $newFileName;
         $amenity->save();
-        //lay duong dan cho hinh anh truoc khi tra du lieu ve
+        //tra du lieu ve
         $newFileName_path = asset('storage/images/amenities/' . $newFileName);
         $amenity->icon_image= $newFileName_path;
         return response()->json([
@@ -70,7 +70,6 @@ class AmenityController extends Controller
         }
         $originFileName = $request->file('icon_image')->getClientOriginalName();
         $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
         $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
         
         $updateAmenity->name = $request->input('name');

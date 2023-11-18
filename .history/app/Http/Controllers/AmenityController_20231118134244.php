@@ -4,12 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Amenity;
 use Illuminate\Http\Request;
-use Ramsey\Uuid\Uuid;
 
 class AmenityController extends Controller
 {
     //php artisan storage:link
-    // composer require ramsey/uuid to import library
+
     public function create(Request $request)
     {
         $validatedData = $request->validate([
@@ -17,22 +16,20 @@ class AmenityController extends Controller
             'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg', 
         ]);
 
-        $amenity = new Amenity;
-        $originFileName = $request->file('icon_image')->getClientOriginalName();
-        $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
-        $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
+        $Amenity = new Amenity;
+        $Amenity->name = $validatedData['name'];
 
-        $amenity->name = $validatedData['name'];
-        $amenity->icon_image = $newFileName;
-        $amenity->save();
-        //lay duong dan cho hinh anh truoc khi tra du lieu ve
+        $newFileName = 'images_amenities_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
+        $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
+        $Amenity->icon_image = $newFileName;
+        $Amenity->save();
+        //tra du lieu ve
         $newFileName_path = asset('storage/images/amenities/' . $newFileName);
-        $amenity->icon_image= $newFileName_path;
+        $Amenity->icon_image= $newFileName_path;
         return response()->json([
             "success" => true,
             "message" => "A amenity created successfully.",
-            "data" => $amenity,
+            "data" => $Amenity,
         ]);
     }
 
@@ -68,18 +65,14 @@ class AmenityController extends Controller
                 "message" => "ID does not exist. Update unsuccessful!!!",
             ], 404);
         }
-        $originFileName = $request->file('icon_image')->getClientOriginalName();
-        $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
+        $newFileName = 'images_amenities_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
+        $newFileName_path = asset('storage/images/amenities/' . $updateAmenity->icon_image);
         $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
-        
+
         $updateAmenity->name = $request->input('name');
         $updateAmenity->icon_image = $newFileName;
-        
+
         $updateAmenity->save();
-        
-        $newFileName_path = asset('storage/images/amenities/' . $updateAmenity->icon_image);
-        $updateAmenity->icon_image = $newFileName_path;
         return response()->json([
             "success" => true,
             "message" => " Amenity have id : ". $id ." updated successfully.",
@@ -92,9 +85,8 @@ class AmenityController extends Controller
             'id' => 'required',
         ]);
         $id = $request->input("id");
-        $amenities = Amenity::find($id);
-        if ($amenities) {
-            $amenities->delete();
+        if (Amenity::find($id)) {
+            Amenity::find($id)->delete();
             return response()->json([
                 "success" => true,
                 "message" => "Deleted amenity with ID: " . $id,
@@ -109,18 +101,18 @@ class AmenityController extends Controller
     public function filterByName(Request $request){
         $name = $request->input("name");
         $Amenities = Amenity::where('name', 'like', '%' . $name . '%')->get();
-        // Để kiểm tra xem Collection có rỗng hay không, sử dụng phương thức isEmpty() hoặc count()
-        if (count($Amenities) > 0) {
+
+        if ($Amenities) {
             foreach ($Amenities as $amenity) {
                 if ($amenity->icon_image != "") {
                     $amenity->icon_image = asset('storage/images/amenities/' . $amenity->icon_image);
-                } else {
-                    $amenity->icon_image = null;
+                }else{
+                    $amenity->icon_image=null;
                 }
             }
             return response()->json([
                 "success" => true,
-                "message" => "All of amenities list",
+                "message" => "",
                 "data" => $Amenities,
             ]);
         } else {
@@ -129,6 +121,5 @@ class AmenityController extends Controller
                 "message" => "Amenity not found.",
             ], 404);
         }
-        
     }
 }

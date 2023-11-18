@@ -70,7 +70,6 @@ class AmenityController extends Controller
         }
         $originFileName = $request->file('icon_image')->getClientOriginalName();
         $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
         $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
         
         $updateAmenity->name = $request->input('name');

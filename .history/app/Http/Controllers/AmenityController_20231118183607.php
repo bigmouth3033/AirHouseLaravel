@@ -17,22 +17,22 @@ class AmenityController extends Controller
             'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg', 
         ]);
 
-        $amenity = new Amenity;
+        $Amenity = new Amenity;
+        $Amenity->name = $validatedData['name'];
+
         $originFileName = $request->file('icon_image')->getClientOriginalName();
         $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
-        $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
 
-        $amenity->name = $validatedData['name'];
-        $amenity->icon_image = $newFileName;
-        $amenity->save();
-        //lay duong dan cho hinh anh truoc khi tra du lieu ve
+        $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
+        $Amenity->icon_image = $newFileName;
+        $Amenity->save();
+        //tra du lieu ve
         $newFileName_path = asset('storage/images/amenities/' . $newFileName);
-        $amenity->icon_image= $newFileName_path;
+        $Amenity->icon_image= $newFileName_path;
         return response()->json([
             "success" => true,
             "message" => "A amenity created successfully.",
-            "data" => $amenity,
+            "data" => $Amenity,
         ]);
     }
 
@@ -70,7 +70,6 @@ class AmenityController extends Controller
         }
         $originFileName = $request->file('icon_image')->getClientOriginalName();
         $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
         $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
         
         $updateAmenity->name = $request->input('name');

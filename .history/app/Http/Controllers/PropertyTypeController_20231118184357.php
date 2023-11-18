@@ -24,14 +24,13 @@ class PropertyTypeController extends Controller
         ]);
         
         $propertyType = new PropertyType;
-        
+        $propertyType->name = $validatedData['name'];
+
         $originFileName = $request->file('icon_image')->getClientOriginalName();
         $newFileName = 'images_property_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
         
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
-
         $propertyType->icon_image = $newFileName;
-        $propertyType->name = $validatedData['name'];
         $propertyType->save();
         
         $newFileName_path=asset('storage/images/property_type/' . $newFileName);
@@ -57,7 +56,7 @@ class PropertyTypeController extends Controller
                 "message" => "ID does not exist. Update unsuccessful!!!",
             ], 404);
         }
-        $originFileName = $request->file('icon_image')->getClientOriginalName();
+       $originFileName = $request->file('icon_image')->getClientOriginalName();
         $newFileName = 'images_property_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
         
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
@@ -113,9 +112,9 @@ class PropertyTypeController extends Controller
     }
     public function filterByName(Request $request){
         $name = $request->input("name");
-        $PropertyTypes = PropertyType::where('name', 'like', '%' . $name . '%')->get();
-        if (count($PropertyTypes) > 0) {
-            foreach ($PropertyTypes as $propertyType) {
+        $propertyTypes = PropertyType::where('name', 'like', '%' . $name . '%')->get();
+        if (count($propertyTypes) > 0) {
+            foreach ($propertyTypes as $propertyType) {
                 if ($propertyType->icon_image != null) {
                     $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
                 }else{
@@ -126,7 +125,7 @@ class PropertyTypeController extends Controller
             return response()->json([
                 "success" => true,
                 "message" => "All of property type list",
-                "data" => $PropertyTypes,
+                "data" => $propertyTypes,
             ],200);
         } else {
             return response()->json([

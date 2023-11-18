@@ -24,14 +24,13 @@ class PropertyTypeController extends Controller
         ]);
         
         $propertyType = new PropertyType;
-        
+        $propertyType->name = $validatedData['name'];
         $originFileName = $request->file('icon_image')->getClientOriginalName();
-        $newFileName = 'images_property_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+        $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+        $newFileName = 'images_property_type_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
         
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
-
         $propertyType->icon_image = $newFileName;
-        $propertyType->name = $validatedData['name'];
         $propertyType->save();
         
         $newFileName_path=asset('storage/images/property_type/' . $newFileName);
@@ -57,16 +56,15 @@ class PropertyTypeController extends Controller
                 "message" => "ID does not exist. Update unsuccessful!!!",
             ], 404);
         }
-        $originFileName = $request->file('icon_image')->getClientOriginalName();
-        $newFileName = 'images_property_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-        
+        $newFileName = 'images_property_type_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
+        $newFileName_path=asset('storage/images/property_type/' . $newFileName);
+
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
-        
+
         $updatePropertyType->name = $request->input('name');
         $updatePropertyType->icon_image = $newFileName;
         $updatePropertyType->save();
-        
-        $newFileName_path=asset('storage/images/property_type/' . $newFileName);
+
         $updatePropertyType->icon_image= $newFileName_path;
         return response()->json([
             "success" => true,
