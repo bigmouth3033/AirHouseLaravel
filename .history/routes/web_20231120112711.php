@@ -8,5 +8,5 @@ Route::middleware(['web', 'auth:sanctum'])->group(function () {
     
     Route::get("/", [AmenityControllerCopy::class, 'index']);
 });
-
-Route::post("/login", [AmenityControllerCopy::class, 'login']);
+Route::post("/postLogin", [AmenityControllerCopy::class, 'postLogin']);
+// Route::get("/login", [AmenityControllerCopy::class, 'login']);
