@@ -6,13 +6,11 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Ramsey\Uuid\Uuid;
 
 class CategoryController extends Controller
 {
-    //
-    // function getData(){
-    //     return Category::all();
-    // }
+
 
     public function create(Request $request)
     {
@@ -33,24 +31,24 @@ class CategoryController extends Controller
         // $Category->description = $request->description;
 
         //bên trái: tên cột trong database, bên phải trùng key của validate
-        $Category->name = $validatedData['name'];
+        $Category->name = $request->input('name');
         $Category->icon = $validatedData['icon_image'];
-        $Category->description = $validatedData['description'];
+        $Category->description = $request->input('description');
 
         //tạo biến chứa tên mới
-        $newFileName = 'images_category_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
+        $newFileName = 'images_category_' . Uuid::uuid4()->toString() . '_' . $request->file('icon_image')->getClientOriginalName();
 
         //lưu file vào thư mục với đường dẫn xxx
         $request->file('icon_image')->storeAs('public/images/category', $newFileName);
 
         //insert tên file mới vào cột 'icon' trong bảng
         $Category->icon = $newFileName;
+        $Category->save();
 
 
         //lay duong dan cho hinh anh truoc khi tra du lieu ve
         $newFileName_path = asset('storage/images/category/' . $newFileName);
         $Category->icon = $newFileName_path;
-        $Category->save();
 
         return response()->json(
             [
@@ -65,13 +63,13 @@ class CategoryController extends Controller
     {
         $Categories = Category::all();
 
-        // foreach ($Categories as $category) {
-        //     if ($category->icon !== null) {
-        //         $category->icon = asset('storage/images/category/' . $category->icon);
-        //     } else {
-        //         $category->icon = null;
-        //     }
-        // }
+        foreach ($Categories as $category) {
+            if ($category->icon !== null) {
+                $category->icon = asset('storage/images/category/' . $category->icon);
+            } else {
+                $category->icon = null;
+            }
+        }
         return response()->json([
             "success" => true,
             "message" => "All Categories.",
@@ -81,12 +79,10 @@ class CategoryController extends Controller
 
     public function update(Request $request)
     {
-
-
         $validatedData = $request->validate([
             'id' => 'required',
-            'name' => 'required|string| max:255',
-            'icon_image' => 'required| mimes:jpeg,png,jpg,gif,svg',
+            'name' => 'string| min:1',
+            'icon_image' => 'required|mimes:jpeg,png,jpg,gif,svg',
             'description' => 'required|string'
         ]);
 
@@ -104,7 +100,7 @@ class CategoryController extends Controller
             $Category->icon = $validatedData['icon_image'];
             $Category->description = $validatedData['description'];
 
-            $newFileName = 'images_category_update_' . time() . '_' . $request->file('icon_image')->getClientOriginalName();
+            $newFileName = 'images_category_update_' . Uuid::uuid4()->toString() . '_' . $request->file('icon_image')->getClientOriginalName();
 
             $request->file('icon_image')->storeAs('public/images/category', $newFileName);
 
@@ -140,13 +136,13 @@ class CategoryController extends Controller
         $Categories = Category::where('name', 'like', '%' . $name . '%')->get();
         // Để kiểm tra xem Collection có rỗng hay không, sử dụng phương thức isEmpty() hoặc count()
         if (count($Categories) > 0) {
-            // foreach ($Categories as $Category) {
-            //     if ($Category->icon_image != "") {
-            //         $Category->icon_image = asset('storage/images/category/' . $Category->icon_image);
-            //     } else {
-            //         $Category->icon_image = null;
-            //     }
-            // }
+            foreach ($Categories as $Category) {
+                if ($Category->icon_image != "") {
+                    $Category->icon_image = asset('storage/images/category/' . $Category->icon_image);
+                } else {
+                    $Category->icon_image = null;
+                }
+            }
             return response()->json([
                 "success" => true,
                 "message" => "All of Categories list",
