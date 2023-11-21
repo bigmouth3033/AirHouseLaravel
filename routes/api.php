@@ -43,3 +43,7 @@ Route::post('/signup', [UserController::class, 'signup']);
 Route::post('/login', [UserController::class, 'login']);
 
 Route::post('createCategory', [CategoryController::class, 'create']);
+Route::post('readCategory', [CategoryController::class, 'read']);
+Route::post('updateCategory', [CategoryController::class, 'update']);
+Route::get('deleteCategory/{id}', [CategoryController::class, 'delete']);
+Route::post('filterByName/', [CategoryController::class, 'filterByName']);
