@@ -24,7 +24,7 @@ class UserController extends Controller
             'last_name' => 'required|string|max:50',
             'birthday' => 'required|date'
         ]);
-//ten bien trung ten
+
         $user = new User();
         $user->email = $validatedData['email'];
         $user->password = bcrypt($validatedData['password']);
@@ -37,10 +37,31 @@ class UserController extends Controller
         return response(compact('user', 'token'));
     }
 
+    public function signupAdmin(Request $request)
+    {
+        $validatedData = $request->validate([
+            'email' => 'required|unique:users|max:50',
+            'password' => [
+                'required', 'confirmed', Password::min(8)->letters()->symbols()->numbers(),
+            ],
+        ]);
+
+        $user = new User();
+        $user->email = $validatedData['email'];
+        $user->password = bcrypt($validatedData['password']);
+        $user->date_of_birth = "1999-01-01";
+        $user->first_name = "admin";
+        $user->last_name  = "admin";
+        $user->user_type = 0;
+        $user->save();
+
+        return response(compact('user'));
+    }
+
     public function login(Request $request)
     {
         $validatedData = $request->validate([
-            'email' => 'required:unique:users|max:50',
+            'email' => 'required|email|max:50',
             'password' => [
                 'required', Password::min(8)->letters()->symbols()->numbers(),
             ],
