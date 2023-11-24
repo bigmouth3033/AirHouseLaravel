@@ -50,3 +50,4 @@ Route::get('deleteCategory/{id}', [CategoryController::class, 'delete']);
 Route::post('filterByName', [CategoryController::class, 'filterByName']);
 
 Route::post('createProperty', [HostController::class, 'create']);
+Route::get('deleteProperty/{id}', [HostController::class, 'delete']);
