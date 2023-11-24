@@ -38,8 +38,6 @@ Route::post('/updateAmenity', [AmenityController::class, 'update']);
 Route::post('deleteAmenity', [AmenityController::class, 'delete']);
 Route::post('filterByNameAmenity', [AmenityController::class, 'filterByName']);
 
-
-
 Route::post('/createPropertyType', [PropertyTypeController::class, 'create']);
 Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
 Route::post('/updatePropertyType', [PropertyTypeController::class, 'update']);
