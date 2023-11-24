@@ -103,7 +103,8 @@ class HostController extends Controller
         $Property = Property::find($id);
 
         if ($Property) {
-            $PropertyImages = PropertyImage::where('property_id', $Property->id);
+            $PropertyImages = PropertyImage::where('property_id', $Property->id)->get();
+
             foreach ($PropertyImages as $PropertyImage) {
                 Storage::delete('public/images/host/' . $PropertyImage->image);
                 $PropertyImage->delete();
