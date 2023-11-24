@@ -4,6 +4,7 @@ use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\HostController;
 use App\Models\PropertyType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -47,3 +48,5 @@ Route::get('readCategory', [CategoryController::class, 'read']);
 Route::post('updateCategory', [CategoryController::class, 'update']);
 Route::get('deleteCategory/{id}', [CategoryController::class, 'delete']);
 Route::post('filterByName', [CategoryController::class, 'filterByName']);
+
+Route::post('createProperty', [HostController::class, 'create']);

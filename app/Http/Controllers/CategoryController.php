@@ -120,7 +120,9 @@ class CategoryController extends Controller
     {
         $Category = Category::find($id);
         if ($Category) {
+            Storage::delete('public/images/category/' . $Category->icon);
             $Category->delete();
+
             return response()->json([
                 'messege' => "Deleted successfully record with ID: " . $id
             ]);
