@@ -26,6 +26,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('/user', function (Request $request) {
     return $request->user();
   });
+  Route::post('createProperty', [HostController::class, 'create']);
 
   Route::post('/logout', [UserController::class, 'logout']);
 
@@ -49,5 +50,5 @@ Route::post('updateCategory', [CategoryController::class, 'update']);
 Route::get('deleteCategory/{id}', [CategoryController::class, 'delete']);
 Route::post('filterByName', [CategoryController::class, 'filterByName']);
 
-Route::post('createProperty', [HostController::class, 'create']);
+
 Route::get('deleteProperty/{id}', [HostController::class, 'delete']);
