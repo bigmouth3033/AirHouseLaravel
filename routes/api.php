@@ -7,7 +7,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DistrictController;
+use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\PropertyTypeController;
+use App\Http\Controllers\ProvinceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,8 +59,31 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('filterByName', [CategoryController::class, 'filterByName']);
   Route::get('/readCategory/{page}', [CategoryController::class, 'readCurrentPage']);
   Route::get('/filterByIdCategory', [CategoryController::class, 'filterById']);
+
+  Route::post('retrieveRoomType', [RoomTypeController::class, 'getRooms']);
+  Route::post('createRoomType', [RoomTypeController::class, 'create']);
+  Route::post('updateRoomType', [RoomTypeController::class, 'update']);
+  Route::post('deleteRoomType', [RoomTypeController::class, 'deleteRoomType']);
+  Route::get('/readRoomType/{page}', [RoomTypeController::class, 'readCurrentPage']);
+  Route::get('/filterByIdRoomType', [RoomTypeController::class, 'filterById']);
+
+  Route::post('createProperty', [PropertyController::class, 'create']);
+  Route::post('deleteProperty/{id}', [PropertyController::class, 'delete']);
+
+  Route::post('/createPropertyType', [PropertyTypeController::class, 'create']);
+  Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
+  Route::post('/updatePropertyType', [PropertyTypeController::class, 'update']);
+  Route::post('deletePropertyType', [PropertyTypeController::class, 'delete']);
+  Route::post('filterByNamePropertyType', [PropertyTypeController::class, 'filterByName']);
+  Route::get('/readPropertyType/{page}', [PropertyTypeController::class, 'readCurrentPage']);
+  Route::get('filterByIdPropertyType', [PropertyTypeController::class, 'filterById']);
 });
 
+
+
+Route::get("/getProvinces", [ProvinceController::class, 'get']);
+Route::get("/getDistrictAll", [DistrictController::class, 'get']);
+Route::get("/getDistrict/province/{provinceID}", [DistrictController::class, 'getBasedOnProvinces']);
 
 //public route
 Route::post('/signup', [UserController::class, 'signup']);

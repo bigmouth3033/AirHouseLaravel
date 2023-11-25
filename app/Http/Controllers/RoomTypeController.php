@@ -5,22 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\RoomType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Ramsey\Uuid\Uuid;
 
 class RoomTypeController extends Controller
 {
-    //
-    function getRooms()
-    {
-        $users = RoomType::all();
-        $array = $users->map(
-            function (RoomType $roomtype) {
-                $roomtype->img_URL = asset('images/room_images/' . $roomtype->icon_image);
-                return $roomtype;
-            }
-        );
-        return $array;
-    }
-
     function create(Request $request)
     {
         $request->validate([
@@ -29,26 +17,52 @@ class RoomTypeController extends Controller
         ]);
 
 
-        $imageName = time() . '.' . $request->file('image')->extension();
+        $roomType = new RoomType();
+
+        $imageName = time() . '_' . $request->file('icon_image')->extension();
         $request->file('icon_image')->storeAs('public/images/room_images', $imageName);
 
-        $checkDB = DB::table('room_type')->insert(
-            [
-                'name' => $request['name'],
-                'icon_image' => $imageName
-            ]
-        );
+        $roomType->name = $request->name;
+        $roomType->icon_image = $imageName;
+        $roomType->save();
 
-        if (!$checkDB) {
-            return response([
-                'message' => 'fail to add'
-            ]);
+        return response()->json([
+            "message" => "A room type created successfully.",
+        ], 201);
+    }
+
+    public function update(Request $request)
+    {
+        $id = $request->input("id");
+        $request->validate([
+            'id' => 'required',
+            'name' => 'required|max:50',
+            'icon_image' => 'image|mimes:jpeg,png,jpg,gif,svg',
+        ]);
+        $updateRoomType = RoomType::find($id);
+
+        if (!$updateRoomType) {
+            return response()->json([
+                "success" => false,
+                "message" => "ID does not exist. Update unsuccessful!!!",
+            ], 404);
         }
 
-        return response([
-            'message' => 'sucess'
-        ]);;
+        if ($request->file('icon_image')) {
+            $originFileName = $request->file('icon_image')->getClientOriginalName();
+            $newFileName = 'images_room_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+            $request->file('icon_image')->storeAs('public/images/room_images', $newFileName);
+            $updateRoomType->icon_image = $newFileName;
+        }
+
+        $updateRoomType->name = $request->input('name');
+        $updateRoomType->save();
+
+        return response()->json([
+            "message" => " Room type have id : " . $id . " updated successfully.",
+        ], 200);
     }
+
 
     function getRoom(Request $request)
     {
@@ -70,21 +84,63 @@ class RoomTypeController extends Controller
         ]);
     }
 
-    function deleteRoom(Request $request)
+    function deleteRoomType(Request $request)
     {
-
         $request->validate([
-            'name' => 'required|max:50'
+            'id' => 'required',
         ]);
+        $id = $request->input("id");
+        $roomType = RoomType::find($id);
 
-        $room = DB::table('room_type')->where('name', $request['name'])->delete();
-        if (!$room) {
-            return response([
-                'message' => 'delete failt'
+        if ($roomType) {
+            unlink(storage_path('app/public/images/room_images/' . $roomType->icon_image));
+            $roomType->delete();
+            return response()->json([
+                'messege' => "Deleted successfully record with ID: " . $id
             ]);
         }
-        return response([
-            'message' => 'succesfull'
+        return response()->json([
+            'messege' => "ID not found to delete"
+        ]);
+    }
+
+    public function filterById(Request $request)
+    {
+        $id = $request->input("id");
+        $roomType = RoomType::where('id',  $id)->first();
+
+        if ($roomType) {
+            $roomType->icon_image = asset('storage/images/room_images/' . $roomType->icon_image);
+            return response()->json([$roomType]);
+        } else {
+            return response([
+                'message' => 'not found'
+            ]);
+        }
+    }
+
+    public function readCurrentPage($currentPage)
+    {
+        $total = RoomType::count();
+        $collections = RoomType::all()->reverse()->chunk(10);
+        $collection = $collections[$currentPage - 1];
+
+        $newCollection = [];
+        foreach ($collection as $key => $chunk) {
+            array_push($newCollection,  $chunk);
+        }
+        $collection = $newCollection;
+
+        foreach ($collection as $roomType) {
+            if ($roomType->icon_image !== null) {
+                $roomType->icon_image = asset('storage/images/room_images/' . $roomType->icon_image);
+            } else {
+                $roomType->icon_image = null;
+            }
+        }
+        return response()->json([
+            'items' => $collection,
+            'total' => $total
         ]);
     }
 }

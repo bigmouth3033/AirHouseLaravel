@@ -28,8 +28,6 @@ class AmenityController extends Controller
 
         $amenity->save();
 
-        $newFileName_path = asset('storage/images/amenities/' . $newFileName);
-        $amenity->icon_image = $newFileName_path;
         return response()->json([
             "message" => "A amenity created successfully.",
         ]);

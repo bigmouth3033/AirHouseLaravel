@@ -26,8 +26,6 @@ class PropertyTypeController extends Controller
         $propertyType->name = $validatedData['name'];
         $propertyType->save();
 
-        $newFileName_path = asset('storage/images/property_type/' . $newFileName);
-        $propertyType->icon_image = $newFileName_path;
         return response()->json([
             "message" => "A property type created successfully.",
         ], 201);

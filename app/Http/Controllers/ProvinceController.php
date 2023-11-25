@@ -8,7 +8,9 @@ use Illuminate\Http\Request;
 class ProvinceController extends Controller
 {
     //
-    function getData(){
-        return Province::all();
+    function get()
+    {
+        $provinces = Province::all();
+        return response([$provinces]);
     }
 }

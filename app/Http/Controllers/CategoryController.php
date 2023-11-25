@@ -21,37 +21,19 @@ class CategoryController extends Controller
             'description' => 'required|string'
         ]);
 
-        //check đầu vào và gán cho các thuộc tính của object Categpry
-
-        //cách 1: trực tiếp gán giá trị từ biến $request vào các thuộc tính của đối tượng $Category.
-        // $Category->name = $request->name;
-        // $Category->icon = $request->iconName;
-        // $Category->description = $request->description;
-
-        //bên trái: tên cột trong database, bên phải trùng key của validate
         $Category->name = $validatedData['name'];
         $Category->description = $validatedData['description'];
 
-        //tạo biến chứa tên mới
         $newFileName = 'images_category_' . Uuid::uuid4()->toString() . '_' . $request->file('icon_image')->getClientOriginalName();
 
-        //lưu file vào thư mục với đường dẫn xxx
         $request->file('icon_image')->storeAs('public/images/category', $newFileName);
 
-        //insert tên file mới vào cột 'icon' trong bảng
         $Category->icon_image = $newFileName;
         $Category->save();
 
-
-        //lay duong dan cho hinh anh truoc khi tra du lieu ve
-        $newFileName_path = asset('storage/images/category/' . $newFileName);
-        $Category->icon = $newFileName_path;
-
         return response()->json(
             [
-                'suscess' => true,
                 'messege' => "added ok",
-                'object' => $Category
             ]
         );
     }
@@ -67,11 +49,7 @@ class CategoryController extends Controller
                 $category->icon = null;
             }
         }
-        return response()->json([
-            "success" => true,
-            "message" => "All Categories.",
-            "data" => $Categories,
-        ]);
+        return response()->json($Categories);
     }
 
     public function update(Request $request)
