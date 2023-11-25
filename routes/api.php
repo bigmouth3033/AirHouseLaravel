@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\HostController;
 use App\Http\Controllers\PropertyTypeController;
 
 /*
@@ -24,6 +25,13 @@ use App\Http\Controllers\PropertyTypeController;
 Route::group(['middleware' => ['auth:sanctum']], function () {
 
   Route::get('/user', function (Request $request) {
+    if (!$request->user()) {
+      return response()->json([
+          'error' => 'Unauthorized',
+          'message' => 'Bạn không được phép truy cập tài nguyên này.',
+      ], 401);
+  }
+
     $user = $request->user();
     $token = $request->bearerToken();
     return response(compact('user', 'token'));
@@ -55,6 +63,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('filterByName', [CategoryController::class, 'filterByName']);
   Route::get('/readCategory/{page}', [CategoryController::class, 'readCurrentPage']);
   Route::get('/filterByIdCategory', [CategoryController::class, 'filterById']);
+
+
+  Route::post('/createHost', [HostController::class, 'create']);
+  Route::post('/readHost', [HostController::class, 'read']);
+  Route::post('/updateHost', [HostController::class, 'update']);
+  Route::get('deleteHost/{id}', [HostController::class, 'delete']);
 });
 
 
