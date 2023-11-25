@@ -136,6 +136,12 @@ class HostController extends Controller
             // });
             //Lay tp, quan
             $properties = Property::find($property_id);
+            $properties->provinces_id = Province::where('code', $properties->provinces_id)->value('full_name');
+            $properties->districts_id = District::where('code', $properties->districts_id)->value('full_name');
+            //Property_type
+            $properties->property_type_id = PropertyType::where('id', $properties->property_type_id)->value('name');
+            $properties->room_type_id = RoomType::where('id', $properties->room_type_id)->value('name');
+            $properties->category_id = Category::where('id', $properties->category_id)->value('name');
             return response()->json([
                 'success' => true,
                 'property_image' => $listPropertyImage,
@@ -256,12 +262,12 @@ class HostController extends Controller
                 return asset('storage/images/host/' . $image);
             });
             //Lay tp, quan
-            // $Property->provinces_id = Province::where('code', $Property->provinces_id)->value('full_name');
-            // $Property->districts_id = District::where('code', $Property->districts_id)->value('full_name');
-            // //Property_type
-            // $Property->property_type_id = PropertyType::where('id', $Property->property_type_id)->value('name');
-            // $Property->room_type_id = RoomType::where('id', $Property->room_type_id)->value('name');
-            // $Property->category_id = Category::where('id', $Property->category_id)->value('name');
+            $Property->provinces_id = Province::where('code', $Property->provinces_id)->value('full_name');
+            $Property->districts_id = District::where('code', $Property->districts_id)->value('full_name');
+            //Property_type
+            $Property->property_type_id = PropertyType::where('id', $Property->property_type_id)->value('name');
+            $Property->room_type_id = RoomType::where('id', $Property->room_type_id)->value('name');
+            $Property->category_id = Category::where('id', $Property->category_id)->value('name');
             return response()->json([
                 'success' => true,
                 'property_image' => $listPropertyImage,
