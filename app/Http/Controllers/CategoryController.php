@@ -10,8 +10,6 @@ use Ramsey\Uuid\Uuid;
 
 class CategoryController extends Controller
 {
-
-
     public function create(Request $request)
     {
         // tạo biến instance từ model Category để truy vấn vào các cột của bảng
