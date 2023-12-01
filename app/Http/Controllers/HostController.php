@@ -69,9 +69,6 @@ class HostController extends Controller
         // Kiểm tra xem có tệp được gửi lên hay không
         if ($request->hasFile('image')) {
             $files = $request->file('image');
-
-
-
             if (!empty($files)) {
                 foreach ($files as $file) {
                     // Lưu tệp vào thư mục lưu trữ
@@ -169,7 +166,6 @@ class HostController extends Controller
             'end_date' => 'required|date',
             'price' => 'required|numeric',
             'minimum_stay' => 'required|int',
-
             // 'image' => 'required',
             'image.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);

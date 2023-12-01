@@ -2,226 +2,183 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\Blog;
+
+use App\Models\BlogOfCate;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Ramsey\Uuid\Uuid;
 
-class CategoryController extends Controller
+class BlogController extends Controller
 {
 
     public function create(Request $request)
     {
         $Blog = new Blog;
-
         $request->validate([
-            'title' => 'required|string| max:300',
+            'title' => 'required|string|max:300',
             'content' => 'required|string',
-            'category' => 'required|int'
+            'category' => 'required|array',
+            'category.*' => 'int',
+            // 'blog_images' => 'required',
+            'blog_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,jpg',
+
         ]);
 
+        $Blog->title = $request->input('title');
+        $Blog->content = $request->input('content');
         $Blog->save();
 
+        $BlogCategories = $request->input('category');
+        foreach ($BlogCategories as $BlogCategory) {
+            $BlogOfCate = new BlogOfCate();
+            $BlogOfCate->id_blog = $Blog->id;
+            $BlogOfCate->id_blog_categories = $BlogCategory;
+            $BlogOfCate->updated_at = Carbon::now(); // Thêm thời gian chỉnh sửa thực tế
+            $BlogOfCate->save();
+        }
 
-
-
-                    // Lưu thông tin tệp vào cơ sở dữ liệu
-                    $BlogOfCate = new BlogOfCate(); // Sửa lại tên biến thành $propertyImage
-                    $BlogOfCate->image = $newFileName;
-                    $BlogOfCate->property_id = $Property->id;
-                    $BlogOfCate->add_by_user = $user_id;
-                    $BlogOfCate->save();
-
-                    if (!$PropertyImage->save()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Lỗi khi lưu thông tin tệp vào cơ sở dữ liệu.'
-                        ]);
-                    }
-                }
-                return response()->json([
-                    'success' => true,
-                    'message' => "added ok",
-                    'property' => $Property,
-                    'property_images' => PropertyImage::where('property_id', $Property->id)->get() // Thêm dòng này
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không có tệp nào được chọn.'
-                ]);
+        //luu file hinh va tra ve duong dan
+        $filePaths = [];
+        if ($request->hasFile('blog_images')) {
+            $files = $request->file('blog_images');
+            foreach ($files as $file) {
+                // Lưu tệp vào thư mục lưu trữ
+                $originFileName = $file->getClientOriginalName();
+                $newFileName = 'images_blogs_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+                $file->storeAs('public/images/blogs', $newFileName);
+                $newFileName_path = asset('storage/images/blogs/' . $newFileName);
+                $filePaths[] = $newFileName_path;
             }
         }
         return response()->json([
-            'success' => false,
-            'message' => 'Không có tệp được tải lên.'
+            'success' => true,
+            'message' => "added ok",
+            'newFileName_path' => $filePaths,
+            'Blog' => $Blog,
+            'BlogOfCate' => $BlogOfCate,
+
         ]);
     }
-    public function read(Request $Request)
-    {
-        $Request->validate([
-            'property_id' => 'required|int'
-        ]);
-        $property_id = $Request->input('property_id');
-        $user = auth()->user();
-        $user_id = $user->id;
-        if ($user_id) {
-            $listPropertyImage = PropertyImage::where('property_id', $property_id)->pluck('image');
 
-            $listPropertyImage = $listPropertyImage->map(function ($image) {
-                return asset('storage/images/host/' . $image);
-            });
-            // $listPropertyImage->transform(function ($image) {
-            //     return asset('storage/images/host/' . $image);
-            // });
-            //Lay tp, quan
-            $properties = Property::find($property_id);
+    public function read(Request $request)
+    {
+        $request->validate([
+            'id_blog' => 'int',
+            'id_category' => 'int',
+        ]);
+
+        //để hiển thị bài viết chi tiết
+        $Blog = '';
+        if ($request->input('id_blog')) {
+            $id_blog = $request->input('id_blog');
+            $id_category = $request->input('id_category');
+            $Blog = Blog::where('id', $id_blog)->first();
+        }
+        //để hiển thị bài viết dựa trên category
+        $ListBlogThroughCateID =  [];
+        if ($request->input('id_category')) {
+            $id_category = $request->input('id_category');
+            $ListBlogID = BlogOfCate::where('id_blog_categories', $id_category)->pluck('id_blog');
+            foreach ($ListBlogID as $BlogId) {
+                $BlogThroughCateID = Blog::where('id', $BlogId)->first();
+                $ListBlogThroughCateID[] = $BlogThroughCateID;
+            }
+        }
+        return response()->json([
+            "success" => true,
+            "data through blog_id" => $Blog,
+            "data through category_id" => $ListBlogThroughCateID,
+        ]);
+    }
+
+    public function update(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:300',
+            'content' => 'required|string',
+            'category' => 'array|required',
+
+            'blog_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,jpg',
+        ]);
+
+        $id = $request->input('id');
+        $Blog = Blog::where('id', $id)->first();
+        $Blog->title = $request->input('title');
+        $Blog->content = $request->input('content');
+        $Blog->updated_at = Carbon::now();
+        $Blog->save();
+
+        //xóa hết record cũ có cùng id_blog tại bảng Blog_Of_Cate, tạo reocrd mới
+        BlogOfCate::where('id_blog', $Blog->id)->delete();
+        $BlogCategories = $request->input('category');
+
+        foreach ($BlogCategories as $BlogCategory) {
+            $BlogOfCate = new BlogOfCate();
+            $BlogOfCate->id_blog = $Blog->id;
+            $BlogOfCate->id_blog_categories = $BlogCategory;
+            $BlogOfCate->updated_at = Carbon::now(); // Thêm thời gian chỉnh sửa thực tế
+            $BlogOfCate->save();
+        }
+
+        if ($request->hasFile('blog_images')) {
+            // // Gọi hàm 'create' và nhận giá trị trả về
+            // $response = $this->create($request);
+            // // Kiểm tra nếu hàm 'create' trả về thành công
+            // if ($response->getStatusCode() === 200) {
+            //     $responseData = json_decode($response->getContent(), true);
+
+            //     if ($responseData['success']) {
+            //         $filePaths = $responseData['newFileName_path'];
+
+            //         // Xóa các tệp tin ảnh
+            //         foreach ($filePaths as $filePath) {
+            //             $fileName = basename($filePath);
+            //             Storage::delete('public/images/blogs/' . $fileName);
+            //         }
+            //     }
+            // }
+            $files = $request->file('blog_images');
+            $filePaths = [];
+            foreach ($files as $file) {
+                // Lưu tệp vào thư mục lưu trữ
+                $originFileName = $file->getClientOriginalName();
+                $newFileName = 'images_blogs_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+                $file->storeAs('public/images/blogs', $newFileName);
+                $newFileName_path = asset('storage/images/blogs/' . $newFileName);
+                $filePaths[] = $newFileName_path;
+            }
+
             return response()->json([
                 'success' => true,
-                'property_image' => $listPropertyImage,
-                'properties' => $properties
+                'message' => "added ok",
+                'newFileName_path' => $filePaths,
+                'Blog' => $Blog,
+                'BlogOfCate' => $BlogOfCate
             ]);
         } else {
             return response()->json([
-                'success' => false,
-                'error' => 'khong co hoster này'
+                'success' => true,
+                'message' => 'Không có tệp nào được chọn nen giu tep cu.',
+                'Blog' => $Blog,
+                'BlogOfCate' => $BlogOfCate
             ]);
         }
     }
-    public function update(Request $request)
-    {
-
-        $request->validate([
-            'name' => 'required|string| max:255',
-            'description' => 'required|string',
-            // 'user_id' => 'required|int',
-            'property_type_id' => 'required|int',
-            'room_type_id' => 'required|int',
-            'category_id' => 'required|int',
-            'provinces_id' => 'required|string',
-            'districts_id' => 'required|string',
-            'address' => 'required|string',
-            'bedroom_count' => 'required|int',
-            'bed_count' => 'required|int',
-            'bathroom__count' => 'required|int',
-            'accomodates_count' => 'required|int',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'price' => 'required|numeric',
-            'minimum_stay' => 'required|int',
-
-            // 'image' => 'required',
-            'image.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-        ]);
-        $id = $request->input('id');
-        $Property = Property::where('id', $id)->first();
-        // $PropertyImage = new PropertyImage();
-        $user = auth()->user();
-        $user_id = $user->id;
-        $Property->name = $request->input('name');
-        $Property->description = $request->input('description');
-        $Property->user_id = $user_id; // Gán 'user_id' trước khi gán 'add_by_user'
-        $Property->property_type_id = $request->input('property_type_id');
-        $Property->room_type_id = $request->input('room_type_id');
-        $Property->category_id = $request->input('category_id');
-        $Property->provinces_id = $request->input('provinces_id');
-        $Property->districts_id = $request->input('districts_id');
-        $Property->address = $request->input('address');
-        $Property->bedroom_count = $request->input('bedroom_count');
-        $Property->bed_count = $request->input('bed_count');
-        $Property->bathroom__count = $request->input('bathroom__count');
-        $Property->accomodates_count = $request->input('accomodates_count');
-        $Property->start_date = $request->input('start_date');
-        $Property->end_date = $request->input('end_date');
-        $Property->price = $request->input('price');
-        $Property->minimum_stay = $request->input('minimum_stay');
-        $Property->save();
 
 
-        if ($request->hasFile('image')) {
-            $files = $request->file('image');
-            if (!empty($files)) {
-                //Neu co update anh thi xoa anh cu trong server
-                $PropertyImage = PropertyImage::where('property_id', $id)->get();
-                foreach ($PropertyImage as $flieImage) {
-                    Storage::delete('public/images/host/' . $flieImage->image);
-                    $flieImage->delete();
-                }
-                //them anh moi
-                foreach ($files as $file) {
-                    // Lưu tệp vào thư mục lưu trữ
-                    $newFileName = 'images_host_' . Uuid::uuid4()->toString() . '_' . $file->getClientOriginalName();
-                    $uploadedFilePath = $file->storeAs('public/images/host', $newFileName);
-
-                    if (!$uploadedFilePath) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Lỗi khi lưu tệp lên máy chủ.'
-                        ]);
-                    }
-
-                    // Lưu thông tin tệp vào cơ sở dữ liệu
-                    $PropertyImage = new PropertyImage;
-                    $PropertyImage->image = $newFileName;
-                    $PropertyImage->property_id = $Property->id;
-                    $PropertyImage->add_by_user = $user_id;
-                    $PropertyImage->save();
-
-                    if (!$PropertyImage->save()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Lỗi khi lưu thông tin tệp vào cơ sở dữ liệu.'
-                        ]);
-                    }
-                }
-                return response()->json([
-                    'success' => true,
-                    'message' => "updated ok",
-                    'property' => $Property,
-                    'property_images' => PropertyImage::where('property_id', $Property->id)->get() // Thêm dòng này
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không có tệp nào được chọn nen giu tep cu.'
-                ]);
-            }
-        }
-        $listPropertyImage = PropertyImage::where('property_id', $id)->pluck('image');
-
-        // $listPropertyImage = $listPropertyImage->map(function ($image) {
-        //     return asset('storage/images/host/' . $image);
-        // });
-        $listPropertyImage->transform(function ($image) {
-            return asset('storage/images/host/' . $image);
-        });
-        //Lay tp, quan
-        // $Property->provinces_id = Province::where('code', $Property->provinces_id)->value('full_name');
-        // $Property->districts_id = District::where('code', $Property->districts_id)->value('full_name');
-        // //Property_type
-        // $Property->property_type_id = PropertyType::where('id', $Property->property_type_id)->value('name');
-        // $Property->room_type_id = RoomType::where('id', $Property->room_type_id)->value('name');
-        // $Property->category_id = Category::where('id', $Property->category_id)->value('name');
-        return response()->json([
-            'success' => true,
-            'property_image' => $listPropertyImage,
-            'properties' => $Property
-        ]);
-    }
     public function delete($id)
     {
-        $Property = Property::find($id);
+        $Blog = Blog::find($id);
 
-        if ($Property) {
-            $PropertyImages = PropertyImage::where('property_id', $Property->id)->get();
+        if ($Blog) {
+            $BlogOfCates = BlogOfCate::where('id_blog', $Blog->id)->get();
 
-            foreach ($PropertyImages as $PropertyImage) {
-                Storage::delete('public/images/host/' . $PropertyImage->image);
-                $PropertyImage->delete();
+            foreach ($BlogOfCates as $BlogOfCate) {
+                $BlogOfCate->delete();
             }
-
-            $Property->delete();
+            $Blog->delete();
 
             return response()->json([
                 'messege' => "Deleted successfully record with ID: " . $id

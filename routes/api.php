@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HostController;
+use App\Http\Controllers\BlogController;
 use App\Models\PropertyType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     return $request->user();
   });
   Route::post('createProperty', [HostController::class, 'create']);
+  Route::get('deleteProperty/{id}', [HostController::class, 'delete']);
 
   Route::post('/logout', [UserController::class, 'logout']);
 
@@ -45,10 +47,13 @@ Route::post('/signup', [UserController::class, 'signup']);
 Route::post('/login', [UserController::class, 'login']);
 
 Route::post('createCategory', [CategoryController::class, 'create']);
+
 Route::get('readCategory', [CategoryController::class, 'read']);
 Route::post('updateCategory', [CategoryController::class, 'update']);
 Route::get('deleteCategory/{id}', [CategoryController::class, 'delete']);
 Route::post('filterByName', [CategoryController::class, 'filterByName']);
 
-
-Route::get('deleteProperty/{id}', [HostController::class, 'delete']);
+Route::post('createBlog', [BlogController::class, 'create']);
+Route::post('updateBlog', [BlogController::class, 'update']);
+Route::post('readBlog', [BlogController::class, 'read']);
+Route::get('deleteBlog/{id}', [BlogController::class, 'delete']);
