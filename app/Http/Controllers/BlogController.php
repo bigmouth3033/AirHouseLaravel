@@ -167,7 +167,6 @@ class BlogController extends Controller
         }
     }
 
-
     public function delete($id)
     {
         $Blog = Blog::find($id);
