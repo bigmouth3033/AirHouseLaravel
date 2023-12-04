@@ -12,6 +12,20 @@ use Ramsey\Uuid\Uuid;
 
 class BlogController extends Controller
 {
+    public function uploadImage(Request $request)
+    {
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $originFileName = $image->getClientOriginalName();
+            $newFileName = 'images_blogs_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+            $image->storeAs('public/images/blogs', $newFileName);
+            $imageUrl = asset('storage/images/blogs/' . $newFileName);
+
+            return response()->json(['url' => $imageUrl], 200);
+        }
+
+        return response()->json(['error' => 'No image file provided'], 400);
+    }
 
     public function create(Request $request)
     {
