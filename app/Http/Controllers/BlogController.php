@@ -55,7 +55,7 @@ class BlogController extends Controller
         return response()->json([
             'success' => true,
             'message' => "added ok",
-            'newFileName_path' => $filePaths,
+            'url' => $filePaths,
             'Blog' => $Blog,
             'BlogOfCate' => $BlogOfCate,
 
