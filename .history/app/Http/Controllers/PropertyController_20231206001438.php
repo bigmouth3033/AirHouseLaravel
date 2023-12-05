@@ -253,7 +253,7 @@ class PropertyController extends Controller
     public function read(Request $Request)
     {
         $Request->validate([
-            'property_id' => 'required|int'
+            'id' => 'required|int'
         ]);
         $property_id = $Request->input('property_id');
         $user = auth()->user();

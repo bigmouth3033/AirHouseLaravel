@@ -249,35 +249,4 @@ class PropertyController extends Controller
                 'properties' => $Property
             ]);
     }
-
-    public function read(Request $Request)
-    {
-        $Request->validate([
-            'property_id' => 'required|int'
-        ]);
-        $property_id = $Request->input('property_id');
-        $user = auth()->user();
-        $user_id = $user->id;
-        if ($user_id) {
-            $listPropertyImage = PropertyImage::where('property_id', $property_id)->pluck('image');
-
-            $listPropertyImage = $listPropertyImage->map(function ($image) {
-                return asset('storage/images/host/' . $image);
-            });
-            // $listPropertyImage->transform(function ($image) {
-            //     return asset('storage/images/host/' . $image);
-            // });
-            $properties = Property::find($property_id);
-            return response()->json([
-                'success' => true,
-                'property_image' => $listPropertyImage,
-                'properties' => $properties
-            ]);
-        } else {
-            return response()->json([
-                'success' => false,
-                'error' => 'khong co hoster này'
-            ]);
-        }
-    }
 }

@@ -104,8 +104,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
   //
 
+  Route::get('filterByIdProperty',[PropertyController::class , 'read']);
 });
-Route::get('filterByIdProperty',[PropertyController::class , 'read']);
 
 
 

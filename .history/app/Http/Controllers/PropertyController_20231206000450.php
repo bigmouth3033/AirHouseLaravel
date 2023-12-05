@@ -267,6 +267,7 @@ class PropertyController extends Controller
             // $listPropertyImage->transform(function ($image) {
             //     return asset('storage/images/host/' . $image);
             // });
+            //Lay tp, quan
             $properties = Property::find($property_id);
             return response()->json([
                 'success' => true,

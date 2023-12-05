@@ -101,11 +101,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('sendMessage', [ChatController::class, 'sendMessage']);
   Route::get('getMessage/', [ChatController::class, 'getMessage']);
   Route::get('getAllUser', [ChatController::class, 'getAllUser']);
-
-  //
-
 });
-Route::get('filterByIdProperty',[PropertyController::class , 'read']);
 
 
 
