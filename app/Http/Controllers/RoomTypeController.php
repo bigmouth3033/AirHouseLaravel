@@ -66,22 +66,15 @@ class RoomTypeController extends Controller
 
     function getRoom(Request $request)
     {
-
-        $request->validate([
-            'name' => 'required|max:50'
-        ]);
-
-        $room = DB::table('room_type')->where('name', $request['name'])->first();
-        if (!$room) {
-            return response([
-                'message' => 'query not found'
-            ]);
+        $roomTypes = RoomType::all();
+        foreach ($roomTypes as $roomType) {
+            if ($roomType->icon_image != null) {
+                $roomType->icon_image = asset('storage/images/room_images/' . $roomType->icon_image);
+            } else {
+                $roomType->icon_image = null;
+            }
         }
-        $imageUrl = asset('images/room_images/' . $room->icon_image);
-        return response([
-            'room' => $room,
-            'URL' => $imageUrl
-        ]);
+        return response()->json($roomTypes);
     }
 
     function deleteRoomType(Request $request)

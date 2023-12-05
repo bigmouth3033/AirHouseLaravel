@@ -87,4 +87,15 @@ class UserController extends Controller
             'message' => 'logout'
         ]);
     }
+
+    public function readById($id)
+    {
+        $user = User::find($id);
+
+        if ($user) {
+            return response($user);
+        }
+
+        return response(['message' => 'not found']);
+    }
 }

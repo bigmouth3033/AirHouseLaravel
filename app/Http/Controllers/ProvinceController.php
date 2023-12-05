@@ -11,6 +11,6 @@ class ProvinceController extends Controller
     function get()
     {
         $provinces = Province::all();
-        return response([$provinces]);
+        return response($provinces);
     }
 }

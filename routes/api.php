@@ -4,14 +4,17 @@ use App\Models\PropertyType;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\HostController;
 use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\PropertyController;
+use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\PropertyTypeController;
-use App\Http\Controllers\ProvinceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +36,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     return response(compact('user', 'token'));
   });
 
+  Route::get('/user/{id}', [UserController::class, 'readById']);
 
   Route::post('/admin/signup', [UserController::class, 'signupAdmin']);
   Route::post('/logout', [UserController::class, 'logout']);
@@ -60,7 +64,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('/readCategory/{page}', [CategoryController::class, 'readCurrentPage']);
   Route::get('/filterByIdCategory', [CategoryController::class, 'filterById']);
 
-  Route::post('retrieveRoomType', [RoomTypeController::class, 'getRooms']);
+  Route::get('retrieveRoomType', [RoomTypeController::class, 'getRoom']);
   Route::post('createRoomType', [RoomTypeController::class, 'create']);
   Route::post('updateRoomType', [RoomTypeController::class, 'update']);
   Route::post('deleteRoomType', [RoomTypeController::class, 'deleteRoomType']);
@@ -77,6 +81,26 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('filterByNamePropertyType', [PropertyTypeController::class, 'filterByName']);
   Route::get('/readPropertyType/{page}', [PropertyTypeController::class, 'readCurrentPage']);
   Route::get('filterByIdPropertyType', [PropertyTypeController::class, 'filterById']);
+
+
+  Route::post('sendMessage', [ChatController::class, 'sendMessage']);
+  Route::post('getMessage', [ChatController::class, 'getMessage']);
+
+
+  Route::post('/create-property', [HostController::class, 'create']);
+  Route::post('/read-properties', [HostController::class, 'read']);
+  Route::post('/update-property', [HostController::class, 'update']);
+  Route::get('/delete-property/{id}', [HostController::class, 'delete']);
+  Route::get('/read-properties/all/{page}', [HostController::class, 'readAllStatusCurrentPage']);
+  Route::get('/read-property/{id}', [HostController::class, 'readById']);
+  Route::post('property/accept', [HostController::class, 'acceptProperty']);
+  Route::post('property/deny', [HostController::class, 'denyProperty']);
+
+  Route::post("blog/uploadImage", [BlogController::class, 'uploadImage']);
+
+  Route::post('sendMessage', [ChatController::class, 'sendMessage']);
+  Route::get('getMessage/', [ChatController::class, 'getMessage']);
+  Route::get('getAllUser', [ChatController::class, 'getAllUser']);
 });
 
 

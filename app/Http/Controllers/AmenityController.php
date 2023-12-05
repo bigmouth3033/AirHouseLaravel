@@ -15,6 +15,7 @@ class AmenityController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|unique:emenities|max:50',
+            'type' => 'required',
             'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
@@ -24,6 +25,7 @@ class AmenityController extends Controller
 
         $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
         $amenity->icon_image = $newFileName;
+        $amenity->type = $validatedData['type'];
         $amenity->name = $validatedData['name'];
 
         $amenity->save();
@@ -81,6 +83,7 @@ class AmenityController extends Controller
         $request->validate([
             'id' => 'required',
             'name' => 'required|max:50',
+            'type' => 'required',
             'icon_image' => 'image|mimes:jpeg,png,jpg,gif,svg',
         ]);
 
@@ -101,7 +104,7 @@ class AmenityController extends Controller
         }
 
         $updateAmenity->name = $request->input('name');
-
+        $updateAmenity->type = $request->input('type');
         $updateAmenity->save();
 
         return response()->json([

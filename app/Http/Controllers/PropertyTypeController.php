@@ -8,6 +8,7 @@ use Ramsey\Uuid\Uuid;
 
 class PropertyTypeController extends Controller
 {
+
     public function create(Request $request)
     {
         $validatedData = $request->validate([
@@ -62,23 +63,17 @@ class PropertyTypeController extends Controller
         ], 200);
     }
 
-
     public function read()
     {
-        $propertyType = PropertyType::all();
-        foreach ($propertyType as $propertyType) {
-
+        $propertyTypes = PropertyType::all();
+        foreach ($propertyTypes as $propertyType) {
             if ($propertyType->icon_image != null) {
                 $propertyType->icon_image = asset('storage/images/property_type/' . $propertyType->icon_image);
             } else {
                 $propertyType->icon_image = null;
             }
         }
-        return response()->json([
-            "success" => true,
-            "message" => "All property type.",
-            "data" => $propertyType,
-        ], 200);
+        return response()->json($propertyTypes);
     }
 
     public function readCurrentPage($currentPage)
