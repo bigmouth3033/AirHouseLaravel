@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ViewPropertyController;
 use App\Models\PropertyType;
 
 use Illuminate\Http\Request;
@@ -15,7 +16,6 @@ use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\PropertyTypeController;
-use App\Http\Controllers\ViewPropertyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -93,7 +93,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('/update-property', [HostController::class, 'update']);
   Route::get('/delete-property/{id}', [HostController::class, 'delete']);
   Route::get('/read-properties/all/{page}', [HostController::class, 'readAllStatusCurrentPage']);
-  Route::get('/read-property/{id}', [HostController::class, 'readById']);
+  Route::get('read-property', [HostController::class, 'readById']);
   Route::post('property/accept', [HostController::class, 'acceptProperty']);
   Route::post('property/deny', [HostController::class, 'denyProperty']);
 
@@ -106,11 +106,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   //
 
 });
-Route::get('filterByIdProperty',[ViewPropertyController::class , 'readById']);
+Route::get('filterByIdProperty',[ViewPropertyController::class , 'read']);
 
 
 
-Route::get("/getPprovinces", [ProvinceController::class, 'get']);
+Route::get("/getProvinces", [ProvinceController::class, 'get']);
 Route::get("/getDistrictAll", [DistrictController::class, 'get']);
 Route::get("/getDistrict/province/{provinceID}", [DistrictController::class, 'getBasedOnProvinces']);
 

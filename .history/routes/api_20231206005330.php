@@ -106,11 +106,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   //
 
 });
-Route::get('filterByIdProperty',[ViewPropertyController::class , 'readById']);
+Route::get('filterByIdProperty',[ViewPropertyController::class , 'read']);
 
 
 
-Route::get("/getPprovinces", [ProvinceController::class, 'get']);
+Route::get("/getProvinces", [ProvinceController::class, 'get']);
 Route::get("/getDistrictAll", [DistrictController::class, 'get']);
 Route::get("/getDistrict/province/{provinceID}", [DistrictController::class, 'getBasedOnProvinces']);
 

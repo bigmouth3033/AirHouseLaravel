@@ -15,7 +15,6 @@ use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\PropertyTypeController;
-use App\Http\Controllers\ViewPropertyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -106,11 +105,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   //
 
 });
-Route::get('filterByIdProperty',[ViewPropertyController::class , 'readById']);
+Route::get('ViewPropertyController',[PropertyController::class , 'read']);
 
 
 
-Route::get("/getPprovinces", [ProvinceController::class, 'get']);
+Route::get("/getProvinces", [ProvinceController::class, 'get']);
 Route::get("/getDistrictAll", [DistrictController::class, 'get']);
 Route::get("/getDistrict/province/{provinceID}", [DistrictController::class, 'getBasedOnProvinces']);
 

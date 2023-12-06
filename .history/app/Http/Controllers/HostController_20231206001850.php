@@ -115,9 +115,9 @@ class HostController extends Controller
     }
 
 
-    public function readById(Request $request)
+    public function readById($id)
     {
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('id', $request->id)->first();
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('id', $id)->first();
 
         foreach ($property->images as $key => $image) {
             $property->images[$key] = asset("storage/images/host/" . $image->image);

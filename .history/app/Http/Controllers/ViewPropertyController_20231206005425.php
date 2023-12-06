@@ -16,9 +16,8 @@ class ViewPropertyController extends Controller
         }
 
         if ($property) {
-            return response()->json([
-                'data'=>$property
-            ]);
+            return response($property);
         }
-    }
-}
+
+}}
+
