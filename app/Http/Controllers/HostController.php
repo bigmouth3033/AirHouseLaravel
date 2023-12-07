@@ -96,11 +96,75 @@ class HostController extends Controller
     }
 
 
-    public function readAllStatusCurrentPage($currentPage)
+    public function readCurrentPageStatus(Request $request)
     {
-        $total = Property::count();
-        $collections = Property::with('user', 'category', 'property_type', 'room_type')->get()->reverse()->chunk(20);
-        $collection = $collections[$currentPage - 1];
+        $status = $request->status;
+        $page = $request->page;
+        $search = $request->search;
+        $category = $request->category;
+        $roomtype = $request->roomtype;
+        $propertytype = $request->propertytype;
+        $accomodates = $request->accomodates;
+        $bedroom = $request->bedroom;
+        $bookingtype = $request->bookingtype;
+        $property_status = $request->property_status;
+
+        $collection = Property::with('user', 'category', 'property_type', 'room_type');
+
+        if ($status == "waiting") {
+            $collection = $collection->where('acception_status', '=',  'waiting');
+        }
+
+        if ($status == 'deny') {
+            $collection = $collection->where('acception_status', '=', $status);
+        }
+
+        if ($status == "accept") {
+            $collection = $collection->where('acception_status', '=', 'accept');
+        }
+
+        $collection = $collection->where(function ($query) use ($search) {
+            $query->where('name', 'like', '%' . $search . '%')->orWhere('id', 'like', '%' . $search . '%');
+        });
+
+        if ($category) {
+            $collection = $collection->where('category_id', $category);
+        }
+
+        if ($roomtype) {
+            $collection = $collection->where('room_type_id', $roomtype);
+        }
+
+        if ($propertytype) {
+            $collection = $collection->where('property_type_id', $propertytype);
+        }
+
+        if ($accomodates) {
+            $collection = $collection->where('accomodates_count', $accomodates);
+        }
+
+
+        if ($bedroom) {
+            $collection = $collection->where('bedroom_count', $bedroom);
+        }
+
+        if ($bookingtype) {
+            $collection = $collection->where('booking_type', $bookingtype);
+        }
+
+        if ($property_status != null) {
+            $collection = $collection->where('property_status', (int) $property_status);
+        }
+
+        $count = $collection->count();
+        $collection = $collection->get()->reverse()->chunk(20);
+
+        $collection_length = count($collection);
+        if ($collection_length < $page) {
+            return response(['message' => 'nothing here'], 404);
+        }
+
+        $collection = $collection[$page - 1];
 
         $newCollection = [];
         foreach ($collection as $key => $chunk) {
@@ -110,7 +174,7 @@ class HostController extends Controller
 
         return response()->json([
             'items' => $collection,
-            'total' => $total
+            'total' => $count,
         ]);
     }
 
@@ -199,6 +263,33 @@ class HostController extends Controller
             ]);
         }
     }
+
+    public function showInIndex(Request $request)
+    {
+        $category = $request->category;
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('category_id', $category);
+        $property = $property->where('acception_status', 'accept');
+        $property = $property->where('property_status', 1);
+
+        $now = now();
+        $property = $property->where('start_date', '<=', $now);
+        $property = $property->where('end_date', '>=', $now);
+
+        $property = $property->get();
+
+        foreach ($property as $key => $value) {
+            foreach ($property[$key]->images as $imgkey => $imgvalue) {
+                $property[$key]->images[$imgkey]->image =  asset("storage/images/host/" . $imgvalue->image);
+            }
+        }
+
+
+
+
+        return response($property);
+    }
+
+
     public function update(Request $request)
     {
 

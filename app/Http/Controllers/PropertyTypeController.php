@@ -11,20 +11,12 @@ class PropertyTypeController extends Controller
 
     public function create(Request $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|max:50',
-            'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
-        ]);
-
         $propertyType = new PropertyType;
-
         $originFileName = $request->file('icon_image')->getClientOriginalName();
         $newFileName = 'images_property_type_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-
         $request->file('icon_image')->storeAs('public/images/property_type', $newFileName);
-
         $propertyType->icon_image = $newFileName;
-        $propertyType->name = $validatedData['name'];
+        $propertyType->name = $request->name;
         $propertyType->save();
 
         return response()->json([
@@ -35,11 +27,7 @@ class PropertyTypeController extends Controller
     public function update(Request $request)
     {
         $id = $request->input("id");
-        $request->validate([
-            'id' => 'required',
-            'name' => 'required|max:50',
-            'icon_image' => 'image|mimes:jpeg,png,jpg,gif,svg',
-        ]);
+
         $updatePropertyType = PropertyType::find($id);
         if (!$updatePropertyType) {
             return response()->json([

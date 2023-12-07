@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\LoginRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SignUpRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Ramsey\Uuid\Uuid;
 
 
 class UserController extends Controller
@@ -97,5 +99,45 @@ class UserController extends Controller
         }
 
         return response(['message' => 'not found']);
+    }
+
+    public function updateUser(Request $request)
+    {
+        $email = $request->email;
+        $firstName = $request->firstName;
+        $lastName = $request->lastName;
+        $phoneNumber = $request->phoneNumber;
+        $gender = $request->gender;
+        $address = $request->address;
+        $about = $request->about;
+
+        $user = DB::table('users')->where('email', $email)->update([
+            'first_name' => $firstName,
+            'last_Name' => $lastName,
+            'phonenumber' => $phoneNumber,
+            'gender' => $gender,
+            'address' => $address,
+            'about' => $about
+        ]);
+
+        $data = [$email, $firstName, $lastName, $phoneNumber, $gender, $address, $about];
+        return $user;
+    }
+
+    public function uploadImage(Request $request)
+    {
+
+        $user = $request->user();
+        $originFileName = $request->file('image')->getClientOriginalName();
+
+        $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+        $request->file('image')->storeAs('public/images/users', $newFileName);
+        $newFileName_path = asset('storage/images/users/' . $newFileName);
+        $user->image = $newFileName_path;
+        $user->email = $request->email;
+        $user->save();
+
+
+        return $newFileName_path;
     }
 }

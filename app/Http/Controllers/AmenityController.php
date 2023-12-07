@@ -13,20 +13,14 @@ class AmenityController extends Controller
 {
     public function create(Request $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|unique:emenities|max:50',
-            'type' => 'required',
-            'icon_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg',
-        ]);
-
         $amenity = new Amenity;
         $originFileName = $request->file('icon_image')->getClientOriginalName();
         $newFileName = 'images_amenities_' . Uuid::uuid4()->toString() . '_' . $originFileName;
 
         $request->file('icon_image')->storeAs('public/images/amenities', $newFileName);
         $amenity->icon_image = $newFileName;
-        $amenity->type = $validatedData['type'];
-        $amenity->name = $validatedData['name'];
+        $amenity->type = $request->type;
+        $amenity->name = $request->name;
 
         $amenity->save();
 
@@ -79,13 +73,6 @@ class AmenityController extends Controller
     public function update(Request $request)
     {
         $id = $request->input("id");
-
-        $request->validate([
-            'id' => 'required',
-            'name' => 'required|max:50',
-            'type' => 'required',
-            'icon_image' => 'image|mimes:jpeg,png,jpg,gif,svg',
-        ]);
 
         $updateAmenity = Amenity::find($id);
 

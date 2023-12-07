@@ -15,14 +15,8 @@ class CategoryController extends Controller
         // tạo biến instance từ model Category để truy vấn vào các cột của bảng
         $Category = new Category;
 
-        $validatedData = $request->validate([
-            'name' => 'required|string| max:255',
-            'icon_image' => 'required| mimes:jpeg,png,jpg,gif,svg',
-            'description' => 'required|string'
-        ]);
-
-        $Category->name = $validatedData['name'];
-        $Category->description = $validatedData['description'];
+        $Category->name =  $request->name;
+        $Category->description =  $request->description;
 
         $newFileName = 'images_category_' . Uuid::uuid4()->toString() . '_' . $request->file('icon_image')->getClientOriginalName();
 
@@ -43,10 +37,10 @@ class CategoryController extends Controller
         $Categories = Category::all();
 
         foreach ($Categories as $category) {
-            if ($category->icon !== null) {
-                $category->icon = asset('storage/images/category/' . $category->icon);
+            if ($category->icon_image !== null) {
+                $category->icon_image = asset('storage/images/category/' . $category->icon_image);
             } else {
-                $category->icon = null;
+                $category->icon_image = null;
             }
         }
         return response()->json($Categories);
@@ -54,22 +48,13 @@ class CategoryController extends Controller
 
     public function update(Request $request)
     {
-        $validatedData = $request->validate([
-            'id' => 'required',
-            'name' => 'string| min:1',
-            'icon_image' => 'mimes:jpeg,png,jpg,gif,svg',
-            'description' => 'required|string'
-        ]);
-
-        $id = $request->input('id');  //k gửi tham số ID cho function update thì làm vầy
-
-        //check if $id exist
-        $Category = Category::find($id);  //trả về bản ghi(record) hoặc NULL
+        $id = $request->input('id');
+        $Category = Category::find($id);
 
         if ($Category) {
-            //gán value mới cho từng cột
-            $Category->name = $validatedData['name'];
-            $Category->description = $validatedData['description'];
+
+            $Category->name = $request->name;
+            $Category->description = $request->description;
 
             if ($request->file('icon_image')) {
                 Storage::delete('public/images/category/' . $Category->icon_image);
@@ -87,6 +72,8 @@ class CategoryController extends Controller
             return response()->json(['messege' => "ID not found", 404]);
         }
     }
+
+
     public function delete(Request $request)
     {
         $request->validate([

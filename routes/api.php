@@ -37,19 +37,18 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   });
 
   Route::get('/user/{id}', [UserController::class, 'readById']);
-
+  Route::post('/updateUser', [UserController::class, 'updateUser']);
+  Route::post('/uploadImage', [UserController::class, 'uploadImage']);
   Route::post('/admin/signup', [UserController::class, 'signupAdmin']);
   Route::post('/logout', [UserController::class, 'logout']);
 
   Route::post('/createAmenity', [AmenityController::class, 'create']);
-  Route::get('/readAmenity', [AmenityController::class, 'read']);
   Route::post('/updateAmenity', [AmenityController::class, 'update']);
   Route::post('deleteAmenity', [AmenityController::class, 'delete']);
   Route::get('filterByIdAmenity', [AmenityController::class, 'filterById']);
   Route::get('/readAmenity/{page}', [AmenityController::class, 'readCurrentPage']);
 
   Route::post('/createPropertyType', [PropertyTypeController::class, 'create']);
-  Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
   Route::post('/updatePropertyType', [PropertyTypeController::class, 'update']);
   Route::post('deletePropertyType', [PropertyTypeController::class, 'delete']);
   Route::post('filterByNamePropertyType', [PropertyTypeController::class, 'filterByName']);
@@ -57,7 +56,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('filterByIdPropertyType', [PropertyTypeController::class, 'filterById']);
 
   Route::post('createCategory', [CategoryController::class, 'create']);
-  Route::get('readCategory', [CategoryController::class, 'read']);
   Route::post('updateCategory', [CategoryController::class, 'update']);
   Route::post('deleteCategory', [CategoryController::class, 'delete']);
   Route::post('filterByName', [CategoryController::class, 'filterByName']);
@@ -75,7 +73,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('deleteProperty/{id}', [PropertyController::class, 'delete']);
 
   Route::post('/createPropertyType', [PropertyTypeController::class, 'create']);
-  Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
   Route::post('/updatePropertyType', [PropertyTypeController::class, 'update']);
   Route::post('deletePropertyType', [PropertyTypeController::class, 'delete']);
   Route::post('filterByNamePropertyType', [PropertyTypeController::class, 'filterByName']);
@@ -91,7 +88,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('/read-properties', [HostController::class, 'read']);
   Route::post('/update-property', [HostController::class, 'update']);
   Route::get('/delete-property/{id}', [HostController::class, 'delete']);
-  Route::get('/read-properties/all/{page}', [HostController::class, 'readAllStatusCurrentPage']);
+  Route::get('/read-properties-status', [HostController::class, 'readCurrentPageStatus']);
   Route::get('/read-property/{id}', [HostController::class, 'readById']);
   Route::post('property/accept', [HostController::class, 'acceptProperty']);
   Route::post('property/deny', [HostController::class, 'denyProperty']);
@@ -104,6 +101,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 });
 
 
+
+
+Route::get('show-property-index', [HostController::class, 'showInIndex']);
+Route::get('readCategory', [CategoryController::class, 'read']);
+Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
+Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
+Route::get('/readAmenity', [AmenityController::class, 'read']);
 
 Route::get("/getProvinces", [ProvinceController::class, 'get']);
 Route::get("/getDistrictAll", [DistrictController::class, 'get']);
