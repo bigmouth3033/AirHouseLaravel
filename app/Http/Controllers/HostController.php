@@ -280,7 +280,7 @@ class HostController extends Controller
                 $property[$key]->images[$imgkey]->image =  asset("storage/images/host/" . $imgvalue->image);
             }
         }
-        
+
         return response($property);
     }
 

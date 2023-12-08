@@ -29,7 +29,6 @@ use App\Http\Controllers\PropertyTypeController;
 
 //protected route
 Route::group(['middleware' => ['auth:sanctum']], function () {
-
   Route::get('/user', function (Request $request) {
     $user = $request->user();
     $token = $request->bearerToken();
@@ -68,8 +67,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('/readRoomType/{page}', [RoomTypeController::class, 'readCurrentPage']);
   Route::get('/filterByIdRoomType', [RoomTypeController::class, 'filterById']);
 
-  Route::post('createProperty', [PropertyController::class, 'create']);
-  Route::post('deleteProperty/{id}', [PropertyController::class, 'delete']);
+
 
   Route::post('/createPropertyType', [PropertyTypeController::class, 'create']);
   Route::post('/updatePropertyType', [PropertyTypeController::class, 'update']);
@@ -78,10 +76,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('/readPropertyType/{page}', [PropertyTypeController::class, 'readCurrentPage']);
   Route::get('filterByIdPropertyType', [PropertyTypeController::class, 'filterById']);
 
-
   Route::post('sendMessage', [ChatController::class, 'sendMessage']);
   Route::post('getMessage', [ChatController::class, 'getMessage']);
-
 
   Route::post('/create-property', [HostController::class, 'create']);
   Route::post('/read-properties', [HostController::class, 'read']);
@@ -93,24 +89,25 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('property/deny', [HostController::class, 'denyProperty']);
 
   Route::post("blog/uploadImage", [BlogController::class, 'uploadImage']);
-
   Route::post('sendMessage', [ChatController::class, 'sendMessage']);
   Route::get('getMessage/', [ChatController::class, 'getMessage']);
   Route::get('getAllUser', [ChatController::class, 'getAllUser']);
+
+  Route::post('createBlog', [BlogController::class, 'create']);
+  Route::post('updateBlog', [BlogController::class, 'update']);
+  Route::get('deleteBlog/{id}', [BlogController::class, 'delete']);
 });
 
-
+//public route
+Route::post('readBlog', [BlogController::class, 'read']);
 Route::get('show-property-index', [HostController::class, 'showInIndex']);
 Route::get('readCategory', [CategoryController::class, 'read']);
 Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
 Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
 Route::get('/readAmenity', [AmenityController::class, 'read']);
 Route::get('retrieveRoomType', [RoomTypeController::class, 'getRoom']);
-
 Route::get("/getProvinces", [ProvinceController::class, 'get']);
 Route::get("/getDistrictAll", [DistrictController::class, 'get']);
 Route::get("/getDistrict/province/{provinceID}", [DistrictController::class, 'getBasedOnProvinces']);
-
-//public route
 Route::post('/signup', [UserController::class, 'signup']);
 Route::post('/login', [UserController::class, 'login']);

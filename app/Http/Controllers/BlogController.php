@@ -12,7 +12,7 @@ use Ramsey\Uuid\Uuid;
 
 class BlogController extends Controller
 {
-    
+
     public function uploadImage(Request $request)
     {
         if ($request->hasFile('image')) {
@@ -138,22 +138,6 @@ class BlogController extends Controller
         }
 
         if ($request->hasFile('blog_images')) {
-            // // Gọi hàm 'create' và nhận giá trị trả về
-            // $response = $this->create($request);
-            // // Kiểm tra nếu hàm 'create' trả về thành công
-            // if ($response->getStatusCode() === 200) {
-            //     $responseData = json_decode($response->getContent(), true);
-
-            //     if ($responseData['success']) {
-            //         $filePaths = $responseData['newFileName_path'];
-
-            //         // Xóa các tệp tin ảnh
-            //         foreach ($filePaths as $filePath) {
-            //             $fileName = basename($filePath);
-            //             Storage::delete('public/images/blogs/' . $fileName);
-            //         }
-            //     }
-            // }
             $files = $request->file('blog_images');
             $filePaths = [];
             foreach ($files as $file) {
