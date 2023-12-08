@@ -70,8 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'Asia/Ho_Chi_Minh',
-
+    'timezone' => 'APP_TIMEZONE=Asia/Ho_Chi_Minh',
 
     /*
     |--------------------------------------------------------------------------

@@ -283,8 +283,8 @@ class PropertyController extends Controller
 
     public function readById(Request $request)
     {
-        $property_id = $request->id;
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('id', $property_id);
+        $category = $request->category;
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('category_id', $category);
         $property = $property->where('acception_status', 'accept');
         $property = $property->where('property_status', 1);
 
@@ -292,9 +292,10 @@ class PropertyController extends Controller
         $property = $property->where('start_date', '<=', $now);
         $property = $property->where('end_date', '>=', $now);
 
-        $property = $property->first();
+        $property = $property->get();
 
-        
+
+
         if( $property){
             foreach ($property->images as $key => $image) {
                 $property->images[$key] = asset("storage/images/host/" . $image->image);
@@ -302,7 +303,12 @@ class PropertyController extends Controller
             foreach ($property->amenities as $key => $amenity) {
                 $property->amenities[$key]->icon_image = asset("storage/images/amenities/" . $amenity->icon_image);
             }
-                return response($now,200);
+            if ($property) {
+                // return response()->json([
+                //     'data'=>$property->images
+                // ]);
+                return response($property,200);
+            }
         }
         else{
             return response()->json([

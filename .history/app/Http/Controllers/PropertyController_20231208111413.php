@@ -283,26 +283,19 @@ class PropertyController extends Controller
 
     public function readById(Request $request)
     {
-        $property_id = $request->id;
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('id', $property_id);
-        $property = $property->where('acception_status', 'accept');
-        $property = $property->where('property_status', 1);
 
-        $now = now();
-        $property = $property->where('start_date', '<=', $now);
-        $property = $property->where('end_date', '>=', $now);
-
-        $property = $property->first();
-
-        
-        if( $property){
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('id', $request->id)->first();
+        $property_status = $property->where('property_status', 1)->first();
+        if( $property && $property_status){
             foreach ($property->images as $key => $image) {
                 $property->images[$key] = asset("storage/images/host/" . $image->image);
             }
             foreach ($property->amenities as $key => $amenity) {
                 $property->amenities[$key]->icon_image = asset("storage/images/amenities/" . $amenity->icon_image);
             }
-                return response($now,200);
+            if ($property) {
+                return response($property,200);
+            }
         }
         else{
             return response()->json([
@@ -311,11 +304,11 @@ class PropertyController extends Controller
         }
        
     }
-    public function showProperty(Request $request){
-        $property_id = $request->id ;
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('category_id', $property_id);
-        $property = $property->where('acception_status', 'accept');
-        $property = $property->where('property_status', 1);
-        $now = now();
-    }
+    // public function showProperty(Request $request){
+    //     $property_id = $request->id ;
+    //     $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('category_id', $property_id);
+    //     $property = $property->where('acception_status', 'accept');
+    //     $property = $property->where('property_status', 1);
+    //     $now = now();
+    // }
 }

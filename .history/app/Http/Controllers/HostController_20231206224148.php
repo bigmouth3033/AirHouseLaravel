@@ -203,7 +203,7 @@ class HostController extends Controller
     {
 
         $request->validate([
-            // 'name' => 'required|string| max:255',
+            'name' => 'required|string| max:255',
             // 'description' => 'required|string',
             // 'property_type_id' => 'required|int',
             // 'room_type_id' => 'required|int',
@@ -228,23 +228,23 @@ class HostController extends Controller
         // $PropertyImage = new PropertyImage();
         $user = auth()->user();
         $user_id = $user->id;
-        // $Property->name = $request->input('name');
-        // $Property->description = $request->input('description');
-        // $Property->user_id = $user_id; 
-        // $Property->property_type_id = $request->input('property_type_id');
-        // $Property->room_type_id = $request->input('room_type_id');
-        // $Property->category_id = $request->input('category_id');
-        // $Property->provinces_id = $request->input('provinces_id');
-        // $Property->districts_id = $request->input('districts_id');
-        // $Property->address = $request->input('address');
-        // $Property->bedroom_count = $request->input('bedroom_count');
-        // $Property->bed_count = $request->input('bed_count');
-        // // $Property->bathroom__count = $request->input('bathroom__count');
-        // $Property->accomodates_count = $request->input('accomodates_count');
-        // $Property->start_date = $request->input('start_date');
-        // $Property->end_date = $request->input('end_date');
-        // // $Property->price = $request->input('price');
-        // $Property->minimum_stay = $request->input('minimum_stay');
+        $Property->name = $request->input('name');
+        $Property->description = $request->input('description');
+        $Property->user_id = $user_id; // Gán 'user_id' trước khi gán 'add_by_user'
+        $Property->property_type_id = $request->input('property_type_id');
+        $Property->room_type_id = $request->input('room_type_id');
+        $Property->category_id = $request->input('category_id');
+        $Property->provinces_id = $request->input('provinces_id');
+        $Property->districts_id = $request->input('districts_id');
+        $Property->address = $request->input('address');
+        $Property->bedroom_count = $request->input('bedroom_count');
+        $Property->bed_count = $request->input('bed_count');
+        $Property->bathroom__count = $request->input('bathroom__count');
+        $Property->accomodates_count = $request->input('accomodates_count');
+        $Property->start_date = $request->input('start_date');
+        $Property->end_date = $request->input('end_date');
+        $Property->price = $request->input('price');
+        $Property->minimum_stay = $request->input('minimum_stay');
         $Property->save();
 
 

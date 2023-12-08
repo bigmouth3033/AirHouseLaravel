@@ -302,7 +302,12 @@ class PropertyController extends Controller
             foreach ($property->amenities as $key => $amenity) {
                 $property->amenities[$key]->icon_image = asset("storage/images/amenities/" . $amenity->icon_image);
             }
-                return response($now,200);
+            if ($property) {
+                // return response()->json([
+                //     'data'=>$property->images
+                // ]);
+                return response($property,200);
+            }
         }
         else{
             return response()->json([
