@@ -9,6 +9,7 @@ use App\Models\PropertyAmenity;
 use Illuminate\Http\Request;
 use App\Models\PropertyImage;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class HostController extends Controller
 {
@@ -246,10 +247,7 @@ class HostController extends Controller
             $listPropertyImage = $listPropertyImage->map(function ($image) {
                 return asset('storage/images/host/' . $image);
             });
-            // $listPropertyImage->transform(function ($image) {
-            //     return asset('storage/images/host/' . $image);
-            // });
-            //Lay tp, quan
+
             $properties = Property::find($property_id);
             return response()->json([
                 'success' => true,
@@ -282,10 +280,7 @@ class HostController extends Controller
                 $property[$key]->images[$imgkey]->image =  asset("storage/images/host/" . $imgvalue->image);
             }
         }
-
-
-
-
+        
         return response($property);
     }
 

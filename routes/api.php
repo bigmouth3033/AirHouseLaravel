@@ -62,7 +62,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('/readCategory/{page}', [CategoryController::class, 'readCurrentPage']);
   Route::get('/filterByIdCategory', [CategoryController::class, 'filterById']);
 
-  Route::get('retrieveRoomType', [RoomTypeController::class, 'getRoom']);
   Route::post('createRoomType', [RoomTypeController::class, 'create']);
   Route::post('updateRoomType', [RoomTypeController::class, 'update']);
   Route::post('deleteRoomType', [RoomTypeController::class, 'deleteRoomType']);
@@ -101,13 +100,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 });
 
 
-
-
 Route::get('show-property-index', [HostController::class, 'showInIndex']);
 Route::get('readCategory', [CategoryController::class, 'read']);
 Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
 Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
 Route::get('/readAmenity', [AmenityController::class, 'read']);
+Route::get('retrieveRoomType', [RoomTypeController::class, 'getRoom']);
 
 Route::get("/getProvinces", [ProvinceController::class, 'get']);
 Route::get("/getDistrictAll", [DistrictController::class, 'get']);

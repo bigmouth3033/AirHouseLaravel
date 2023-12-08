@@ -9,4 +9,5 @@ class District extends Model
 {
     use HasFactory;
     protected $table = 'districts';
+    protected $keyType = 'string';
 }
