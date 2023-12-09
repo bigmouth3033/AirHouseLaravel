@@ -5,16 +5,17 @@ use App\Models\PropertyType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ChatController;
-use App\Http\Controllers\HostController;
+use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\BlogCategoryController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DistrictController;
-use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\PropertyTypeController;
+use App\Models\BlogOfCate;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,8 +68,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('/readRoomType/{page}', [RoomTypeController::class, 'readCurrentPage']);
   Route::get('/filterByIdRoomType', [RoomTypeController::class, 'filterById']);
 
-
-
   Route::post('/createPropertyType', [PropertyTypeController::class, 'create']);
   Route::post('/updatePropertyType', [PropertyTypeController::class, 'update']);
   Route::post('deletePropertyType', [PropertyTypeController::class, 'delete']);
@@ -79,14 +78,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('sendMessage', [ChatController::class, 'sendMessage']);
   Route::post('getMessage', [ChatController::class, 'getMessage']);
 
-  Route::post('/create-property', [HostController::class, 'create']);
-  Route::post('/read-properties', [HostController::class, 'read']);
-  Route::post('/update-property', [HostController::class, 'update']);
-  Route::get('/delete-property/{id}', [HostController::class, 'delete']);
-  Route::get('/read-properties-status', [HostController::class, 'readCurrentPageStatus']);
-  Route::get('/read-property/{id}', [HostController::class, 'readById']);
-  Route::post('property/accept', [HostController::class, 'acceptProperty']);
-  Route::post('property/deny', [HostController::class, 'denyProperty']);
+  Route::post('/create-property', [PropertyController::class, 'create']);
+  Route::post('/read-properties', [PropertyController::class, 'read']);
+  Route::post('/update-property', [PropertyController::class, 'update']);
+  Route::get('/delete-property/{id}', [PropertyController::class, 'delete']);
+  Route::get('/read-properties-status', [PropertyController::class, 'readCurrentPageStatus']);
+  Route::get('/read-property/{id}', [PropertyController::class, 'readById']);
+  Route::post('property/accept', [PropertyController::class, 'acceptProperty']);
+  Route::post('property/deny', [PropertyController::class, 'denyProperty']);
 
   Route::post("blog/uploadImage", [BlogController::class, 'uploadImage']);
   Route::post('sendMessage', [ChatController::class, 'sendMessage']);
@@ -96,11 +95,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('createBlog', [BlogController::class, 'create']);
   Route::post('updateBlog', [BlogController::class, 'update']);
   Route::get('deleteBlog/{id}', [BlogController::class, 'delete']);
+
+  Route::post('updateBlogCategory', [BlogCategoryController::class, 'update']);
+  Route::get('readBlogCategory', [BlogCategoryController::class, 'read']);
 });
 
 //public route
+Route::get('check-email-unique', [UserController::class, 'checkEmailUnique']);
+Route::get('showUserPropertyById', [PropertyController::class, 'showUserPropertyById']);
 Route::post('readBlog', [BlogController::class, 'read']);
-Route::get('show-property-index', [HostController::class, 'showInIndex']);
+Route::get('show-property-index', [PropertyController::class, 'showInIndex']);
 Route::get('readCategory', [CategoryController::class, 'read']);
 Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
 Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);

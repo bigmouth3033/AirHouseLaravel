@@ -17,22 +17,12 @@ class UserController extends Controller
 {
     public function signup(Request $request)
     {
-        $validatedData = $request->validate([
-            'email' => 'required|unique:users|max:50',
-            'password' => [
-                'required', 'confirmed', Password::min(8)->letters()->symbols()->numbers(),
-            ],
-            'first_name' => 'required|string|max:50',
-            'last_name' => 'required|string|max:50',
-            'birthday' => 'required|date'
-        ]);
-
         $user = new User();
-        $user->email = $validatedData['email'];
-        $user->password = bcrypt($validatedData['password']);
-        $user->date_of_birth = $validatedData['birthday'];
-        $user->first_name = $validatedData['first_name'];
-        $user->last_name  = $validatedData['last_name'];
+        $user->email = $request->email;
+        $user->password = bcrypt($request->password);
+        $user->date_of_birth = $request->birthday;
+        $user->first_name = $request->first_name;
+        $user->last_name  = $request->last_name;
         $user->save();
 
         $token = $user->createToken('myToken')->plainTextToken;
@@ -41,16 +31,9 @@ class UserController extends Controller
 
     public function signupAdmin(Request $request)
     {
-        $validatedData = $request->validate([
-            'email' => 'required|unique:users|max:50',
-            'password' => [
-                'required', 'confirmed', Password::min(8)->letters()->symbols()->numbers(),
-            ],
-        ]);
-
         $user = new User();
-        $user->email = $validatedData['email'];
-        $user->password = bcrypt($validatedData['password']);
+        $user->email = $request->email;
+        $user->password = bcrypt($request->password);
         $user->date_of_birth = "1999-01-01";
         $user->first_name = "admin";
         $user->last_name  = "admin";
@@ -62,18 +45,12 @@ class UserController extends Controller
 
     public function login(Request $request)
     {
-        $validatedData = $request->validate([
-            'email' => 'required|email|max:50',
-            'password' => [
-                'required', Password::min(8)->letters()->symbols()->numbers(),
-            ],
-        ]);
 
-        $user = User::where('email', $validatedData['email'])->first();
+        $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($validatedData['password'], $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response([
-                'message' => 'wrong fucking account or password'
+                'message' => 'wrong account or password'
             ], 401);
         }
 
@@ -139,5 +116,20 @@ class UserController extends Controller
 
 
         return $newFileName_path;
+    }
+
+    public function checkEmailUnique(Request $request)
+    {
+        $email = User::where('email', $request->email)->first();
+
+        if ($email) {
+            return response([
+                'message' => 'email already exist'
+            ], 406);
+        }
+
+        return response([
+            'message' => "acceptable"
+        ]);
     }
 }
