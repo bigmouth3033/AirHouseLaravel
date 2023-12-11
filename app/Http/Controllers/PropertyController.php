@@ -288,7 +288,7 @@ class PropertyController extends Controller
     public function showUserPropertyById(Request $request)
     {
         $property_id = $request->id;
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('id', $property_id);
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images', 'booking')->where('id', $property_id);
         $property = $property->where('acception_status', 'accept');
         $property = $property->where('property_status', 1);
 

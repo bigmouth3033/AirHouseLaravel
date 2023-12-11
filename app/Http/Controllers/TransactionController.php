@@ -7,8 +7,8 @@ use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    //
-    function getData(){
-        return Transaction::all();
+    function createTransaction(Request $request)
+    {
+        
     }
 }

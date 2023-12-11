@@ -10,11 +10,13 @@ use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\BlogCategoryController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\PropertyTypeController;
+use App\Http\Controllers\TransactionController;
 use App\Models\BlogOfCate;
 
 /*
@@ -94,10 +96,23 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
   Route::post('createBlog', [BlogController::class, 'create']);
   Route::post('updateBlog', [BlogController::class, 'update']);
+  Route::get('readBlog', [BlogController::class, 'read']);
   Route::get('deleteBlog/{id}', [BlogController::class, 'delete']);
+  Route::get('readCurrentPage', [BlogController::class, 'readCurrentPage']);
+  Route::get('filterByIdBlog', [BlogController::class, 'filterById']);
 
+  Route::post('/uploadImage', [BlogController::class, 'uploadImage']);
+
+  Route::post('createBlogCategory', [BlogCategoryController::class, 'create']);
   Route::post('updateBlogCategory', [BlogCategoryController::class, 'update']);
   Route::get('readBlogCategory', [BlogCategoryController::class, 'read']);
+  Route::get('deleteBlogCategory/{id}', [BlogCategoryController::class, 'delete']); //viết done
+  Route::get('readCateCurrentPage', [BlogCategoryController::class, 'readCurrentPage']);
+  Route::get('filterByIdBlogCategory', [BlogCategoryController::class, 'filterById']);
+
+
+  Route::post('user-booking', [BookingController::class, 'createBooking']);
+  Route::post('create-transaction', [TransactionController::class, 'createTransaction']);
 });
 
 //public route

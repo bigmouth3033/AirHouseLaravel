@@ -12,7 +12,6 @@ use Ramsey\Uuid\Uuid;
 
 class BlogController extends Controller
 {
-
     public function uploadImage(Request $request)
     {
         if ($request->hasFile('image')) {
@@ -31,21 +30,21 @@ class BlogController extends Controller
     public function create(Request $request)
     {
         $Blog = new Blog;
-        $request->validate([
-            'title' => 'required|string|max:300',
-            'content' => 'required|string',
-            'category' => 'required|array',
-            'category.*' => 'int',
-            // 'blog_images' => 'required',
-            'blog_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,jpg',
-
-        ]);
 
         $Blog->title = $request->input('title');
         $Blog->content = $request->input('content');
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $originFileName = $image->getClientOriginalName();
+            $newFileName = 'images_blogs_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+            $image->storeAs('public/images/blogs', $newFileName);
+            $Blog->image = $newFileName;
+        }
         $Blog->save();
 
         $BlogCategories = $request->input('category');
+
         foreach ($BlogCategories as $BlogCategory) {
             $BlogOfCate = new BlogOfCate();
             $BlogOfCate->id_blog = $Blog->id;
@@ -54,26 +53,9 @@ class BlogController extends Controller
             $BlogOfCate->save();
         }
 
-        //luu file hinh va tra ve duong dan
-        $filePaths = [];
-        if ($request->hasFile('blog_images')) {
-            $files = $request->file('blog_images');
-            foreach ($files as $file) {
-                // Lưu tệp vào thư mục lưu trữ
-                $originFileName = $file->getClientOriginalName();
-                $newFileName = 'images_blogs_' . Uuid::uuid4()->toString() . '_' . $originFileName;
-                $file->storeAs('public/images/blogs', $newFileName);
-                $newFileName_path = asset('storage/images/blogs/' . $newFileName);
-                $filePaths[] = $newFileName_path;
-            }
-        }
         return response()->json([
             'success' => true,
-            'message' => "added ok",
-            'url' => $filePaths,
             'Blog' => $Blog,
-            'BlogOfCate' => $BlogOfCate,
-
         ]);
     }
 
@@ -90,6 +72,8 @@ class BlogController extends Controller
             $id_blog = $request->input('id_blog');
             $id_category = $request->input('id_category');
             $Blog = Blog::where('id', $id_blog)->first();
+            $imageName = $Blog->image;
+            $imageUrl = asset('storage/images/blogs/' . $imageName);
         }
         //để hiển thị bài viết dựa trên category
         $ListBlogThroughCateID =  [];
@@ -104,26 +88,30 @@ class BlogController extends Controller
         return response()->json([
             "success" => true,
             "data through blog_id" => $Blog,
+            "imageUrl" => $imageUrl,
             "data through category_id" => $ListBlogThroughCateID,
         ]);
     }
 
     public function update(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:300',
-            'content' => 'required|string',
-            'category' => 'array|required',
-
-            'blog_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,jpg',
-        ]);
-
-        $id = $request->input('id');
+        $id = $request->id;
         $Blog = Blog::where('id', $id)->first();
-        $Blog->title = $request->input('title');
-        $Blog->content = $request->input('content');
-        $Blog->updated_at = Carbon::now();
-        $Blog->save();
+        if ($Blog) {
+            $Blog->title = $request->input('title');
+            $Blog->content = $request->input('content');
+            $Blog->updated_at = Carbon::now();
+
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $originFileName = $image->getClientOriginalName();
+                $newFileName = 'images_blogs_' . Uuid::uuid4()->toString() . '_' . $originFileName;
+                $image->storeAs('public/images/blogs', $newFileName);
+                // $imageUrl = asset('storage/images/blogs/' . $newFileName);
+                $Blog->image = $newFileName;
+            }
+            $Blog->save();
+        }
 
         //xóa hết record cũ có cùng id_blog tại bảng Blog_Of_Cate, tạo reocrd mới
         BlogOfCate::where('id_blog', $Blog->id)->delete();
@@ -183,7 +171,43 @@ class BlogController extends Controller
             ]);
         }
         return response()->json([
-            'messege' => "ID not found to delete"
+            'messege' => "ID not found to delete",
+            'status' => 403
         ]);
+    }
+
+    public function readCurrentPage(Request $request)
+    {
+        $currentPage = $request->page;    //api bên react đã gửi cái params có tên là page
+        $total = Blog::count();  //lấy tổng sp để chai trang
+        $collections = Blog::all()->reverse()->chunk(10);    //chuck(20) để chia ra những mảng con gồm 20sp trong mảng lớn, reverse: đảo lại để những cái mới tạo sẽ nằm đầu
+        $collection = $collections[$currentPage - 1];     // lấy 1 page cụ thể trong mảng các page
+
+        $newCollection = [];
+        foreach ($collection as $key => $chunk) {
+            array_push($newCollection,  $chunk);
+        }
+        $collection = $newCollection;
+
+        return response()->json([
+            'items' => $collection,
+            'total' => $total
+        ]);
+    }
+
+    public function filterById(Request $request)
+    {
+        $id = $request->id;  //api bên react đã gửi cái params có tên là id
+        $blog = Blog::with('categories')->where('id',  $id)->first(); //categories: tên function tạo relationship bên file Model
+
+        if ($blog) {
+            // $blog->icon_image = asset('storage/images/blogs/' . $blog->image);
+            return response()->json($blog);
+        } else {
+            return response([
+                'message' => 'not found',
+                'status' => 403
+            ]);
+        }
     }
 }
