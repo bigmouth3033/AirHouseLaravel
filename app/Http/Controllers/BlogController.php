@@ -67,7 +67,8 @@ class BlogController extends Controller
         ]);
 
 
-        $Blogs = Blog::all();
+        // $Blogs = Blog::all();
+        $Blogs =  Blog::with('categories')->whereNotNull('image')->get();
         foreach ($Blogs as $Blog) {
             $imageName = $Blog->image;
             $Blog->image = asset('storage/images/blogs/' . $imageName);
