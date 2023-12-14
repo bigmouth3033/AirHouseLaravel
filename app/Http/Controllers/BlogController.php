@@ -66,20 +66,21 @@ class BlogController extends Controller
             'id_category' => 'int',
         ]);
 
-        //để hiển thị bài viết chi tiết
+
         $Blogs = Blog::all();
         foreach ($Blogs as $Blog) {
             $imageName = $Blog->image;
             $Blog->image = asset('storage/images/blogs/' . $imageName);
         }
 
-        if ($request->input('id_blog')) {
-            $id_blog = $request->input('id_blog');
-            $id_category = $request->input('id_category');
-            $Blog = Blog::where('id', $id_blog)->first();
-            $imageName = $Blog->image;
-            $Blog->image = asset('storage/images/blogs/' . $imageName);
-        }
+        //để hiển thị bài viết chi tiết
+        // if ($request->input('id_blog')) {
+        //     $id_blog = $request->input('id_blog');
+        //     $id_category = $request->input('id_category');
+        //     $Blog = Blog::where('id', $id_blog)->first();
+        //     $imageName = $Blog->image;
+        //     $Blog->image = asset('storage/images/blogs/' . $imageName);
+        // }
         //để hiển thị bài viết dựa trên category
         $ListBlogThroughCateID =  [];
         if ($request->input('id_category')) {
