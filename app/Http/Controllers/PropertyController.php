@@ -6,6 +6,8 @@ use Ramsey\Uuid\Uuid;
 use App\Models\Property;
 use Illuminate\Http\Request;
 use App\Models\PropertyImage;
+use Carbon\Carbon;
+use DateTime;
 use Illuminate\Support\Facades\Storage;
 
 class PropertyController extends Controller
@@ -209,7 +211,7 @@ class PropertyController extends Controller
                     }
 
                     // Lưu thông tin tệp vào cơ sở dữ liệu
-                    $PropertyImage =new PropertyImage;
+                    $PropertyImage = new PropertyImage;
                     $PropertyImage->image = $newFileName;
                     $PropertyImage->property_id = $Property->id;
                     $PropertyImage->add_by_user = $user_id;
@@ -237,17 +239,17 @@ class PropertyController extends Controller
         }
         $listPropertyImage = PropertyImage::where('property_id', $id)->pluck('image');
 
-            // $listPropertyImage = $listPropertyImage->map(function ($image) {
-            //     return asset('storage/images/host/' . $image);
-            // });
-            $listPropertyImage->transform(function ($image) {
-                return asset('storage/images/host/' . $image);
-            });
-            return response()->json([
-                'success' => true,
-                'property_image' => $listPropertyImage,
-                'properties' => $Property
-            ]);
+        // $listPropertyImage = $listPropertyImage->map(function ($image) {
+        //     return asset('storage/images/host/' . $image);
+        // });
+        $listPropertyImage->transform(function ($image) {
+            return asset('storage/images/host/' . $image);
+        });
+        return response()->json([
+            'success' => true,
+            'property_image' => $listPropertyImage,
+            'properties' => $Property
+        ]);
     }
 
     public function read(Request $Request)
@@ -284,38 +286,33 @@ class PropertyController extends Controller
     public function readById(Request $request)
     {
         $property_id = $request->id;
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('id', $property_id);
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images','booking')->where('id', $property_id);
         $property = $property->where('acception_status', 'accept');
         $property = $property->where('property_status', 1);
 
-        $now = now();
+    
+        $now =now()->toDateTimeString();
+
+
         $property = $property->where('start_date', '<=', $now);
         $property = $property->where('end_date', '>=', $now);
 
         $property = $property->first();
 
-        
-        if( $property){
+
+        if ($property) {
             foreach ($property->images as $key => $image) {
                 $property->images[$key] = asset("storage/images/host/" . $image->image);
             }
             foreach ($property->amenities as $key => $amenity) {
                 $property->amenities[$key]->icon_image = asset("storage/images/amenities/" . $amenity->icon_image);
             }
-                return response($now,200);
-        }
-        else{
+            // return date_default_timezone_get();
+            return response($property, 200);
+        } else {
             return response()->json([
-                "error"=>"Not found property"
-            ],404);
+                "error" => "Not found property"
+            ], 404);
         }
-       
-    }
-    public function showProperty(Request $request){
-        $property_id = $request->id ;
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('category_id', $property_id);
-        $property = $property->where('acception_status', 'accept');
-        $property = $property->where('property_status', 1);
-        $now = now();
     }
 }

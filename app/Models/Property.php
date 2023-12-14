@@ -59,4 +59,10 @@ class Property extends Model
     {
         return $this->belongsToMany(Amenity::class, 'property_amenities', 'property_id', 'amenity_id');
     }
+
+
+    public function booking(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'property_id');
+    }
 }

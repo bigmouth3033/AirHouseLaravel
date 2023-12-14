@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\PropertyType;
+use App\Http\Controllers\TransactionController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -9,13 +9,15 @@ use App\Http\Controllers\HostController;
 use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\PropertyTypeController;
-use App\Http\Controllers\ViewPropertyController;
+use App\Http\Controllers\PaymentController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -104,16 +106,31 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('getAllUser', [ChatController::class, 'getAllUser']);
 
   //
-
+  Route::post('user-booking', [BookingController::class, 'createBooking']);
+  Route::post('create-transaction', [TransactionController::class, 'createTransaction']);
+  
 });
 Route::get('filterByIdProperty',[PropertyController::class , 'readById']);
+Route::get('readBooking', [BookingController::class, 'readBooking']);
 
-
-
+//public route
+Route::get('check-email-unique', [UserController::class, 'checkEmailUnique']);
+Route::get('showUserPropertyById', [PropertyController::class, 'showUserPropertyById']);
+Route::post('readBlog', [BlogController::class, 'read']);
+Route::get('show-property-index', [PropertyController::class, 'showInIndex']);
+Route::get('readCategory', [CategoryController::class, 'read']);
+Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
+Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);
+Route::get('/readAmenity', [AmenityController::class, 'read']);
+Route::get('retrieveRoomType', [RoomTypeController::class, 'getRoom']);
 Route::get("/getProvinces", [ProvinceController::class, 'get']);
 Route::get("/getDistrictAll", [DistrictController::class, 'get']);
 Route::get("/getDistrict/province/{provinceID}", [DistrictController::class, 'getBasedOnProvinces']);
-
-//public route
 Route::post('/signup', [UserController::class, 'signup']);
 Route::post('/login', [UserController::class, 'login']);
+//payment
+                                                            
+Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
+Route::get('/successBooking', [PaymentController::class, 'success']);
+
+Route::get('/readSuccessBooking', [PaymentController::class, 'readSuccess']);
