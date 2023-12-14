@@ -113,6 +113,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
   Route::post('user-booking', [BookingController::class, 'createBooking']);
   Route::post('create-transaction', [TransactionController::class, 'createTransaction']);
+
+
+  Route::get('getBookingByUser', [BookingController::class, 'getBookingByUser']);
+
+  Route::get('property-list', [PropertyController::class, 'listingProperty']);
 });
 
 //public route
@@ -130,3 +135,6 @@ Route::get("/getDistrictAll", [DistrictController::class, 'get']);
 Route::get("/getDistrict/province/{provinceID}", [DistrictController::class, 'getBasedOnProvinces']);
 Route::post('/signup', [UserController::class, 'signup']);
 Route::post('/login', [UserController::class, 'login']);
+
+
+Route::post('google-signup', [UserController::class, 'signUpGoogle']);

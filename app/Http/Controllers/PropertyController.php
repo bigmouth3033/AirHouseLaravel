@@ -456,4 +456,47 @@ class PropertyController extends Controller
             'messege' => "ID not found to delete"
         ]);
     }
+
+
+    public function listingProperty(Request $request)
+    {
+        $collection = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images');
+
+        if ($request->status == "listed") {
+            $collection = $collection->where("property_status", 1);
+        }
+
+        if ($request->status == "unlisted") {
+            $collection = $collection->where("property_status", 0);
+        }
+
+        $count = $collection->count();
+        $collection = $collection->get()->reverse()->chunk(10);
+
+        $collection_length = count($collection);
+
+        if ($collection_length < $request->page) {
+            return response(['message' => 'nothing here'], 404);
+        }
+
+        $collection = $collection[$request->page - 1];
+
+        $newCollection = [];
+        foreach ($collection as $key => $chunk) {
+            array_push($newCollection,  $chunk);
+        }
+
+        $collections = $newCollection;
+
+        foreach ($collections as $key => $value) {
+            foreach ($collections[$key]->images as $imgkey => $imgvalue) {
+                $collections[$key]->images[$imgkey]->image =  asset("storage/images/host/" . $imgvalue->image);
+            }
+        }
+
+        return response()->json([
+            'items' => $collections,
+            'total' => $count,
+        ]);
+    }
 }

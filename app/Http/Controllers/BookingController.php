@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
@@ -25,5 +26,30 @@ class BookingController extends Controller
         $booking->save();
 
         return response($booking, 200);
+    }
+
+
+    function getBookingByUser(Request $request)
+    {
+        $user = $request->user();
+
+        DB::statement("SET SQL_MODE=''");
+        $bookings = DB::table('bookings')
+            ->select('bookings.id', 'bookings.property_id', 'bookings.user_id', 'bookings.check_in_date', 'bookings.check_out_date', 'property_images.image', 'properties.user_id', 'properties.name as Property_Name', 'properties.address as Property_Address', 'users.image as user_image', 'users.first_name as user_firstName',  'users.last_name as user_lastName', 'users.email as user_Email', 'provinces.full_name as province', 'districts.full_name as districts')
+            ->join('property_images', 'property_images.property_id', '=', 'bookings.property_id')
+            ->join('properties', 'properties.id', '=', 'bookings.property_id')
+            ->join('users', 'users.id', '=', 'properties.user_id')
+            ->join('provinces', 'provinces.code', '=', 'properties.provinces_id')
+            ->join('districts', 'districts.code', '=', 'properties.districts_id')
+            ->where('bookings.user_id', $user->id)
+            ->groupBy('bookings.id')
+            ->get();
+
+
+        foreach ($bookings as $booking) {
+            $booking->image = asset("storage/images/host/" . $booking->image);
+        }
+
+        return $bookings;
     }
 }

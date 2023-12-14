@@ -134,4 +134,18 @@ class UserController extends Controller
     }
 
 
+    public function signUpGoogle(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        if ($user) {
+            $token =  $user->createToken('myToken')->plainTextToken;
+            return response([
+                'user' => $user,
+                'token' => $token
+            ]);
+        }
+
+        return response(['message' => 'cant do that'], 403);
+    }
 }
