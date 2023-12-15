@@ -33,12 +33,12 @@ class DatabaseSeeder extends Seeder
         //     }
         // }
 
-        $property = 95;
+        // $property = 95;
 
-        for ($i = 0; $i < 5; $i++) {
-            PropertyImage::factory()->state([
-                'property_id' => $property
-            ])->create();
-        }
+        // for ($i = 0; $i < 5; $i++) {
+        //     PropertyImage::factory()->state([
+        //         'property_id' => $property
+        //     ])->create();
+        // }
     }
 }

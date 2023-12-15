@@ -116,6 +116,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
   Route::get('getBookingByUser', [BookingController::class, 'getBookingByUser']);
+  Route::get('readCurrentPage', [BookingController::class, 'readCurrentPage']);
 
   Route::get('property-list', [PropertyController::class, 'listingProperty']);
 });
