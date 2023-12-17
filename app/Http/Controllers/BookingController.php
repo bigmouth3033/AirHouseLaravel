@@ -57,19 +57,32 @@ class BookingController extends Controller
     function readCurrentPage(Request $request)
     {
         $user = $request->user();
-        $perPage = 5;
+        $perPage = 10;
         DB::statement("SET SQL_MODE=''");
         $bookings = DB::table('bookings')
-            // ->select('bookings.id', 'bookings.property_id', 'bookings.user_id', 'bookings.check_in_date', 'bookings.check_out_date', 'property_images.image', 'properties.user_id', 'properties.name as Property_Name', 'properties.address as Property_Address', 'users.image as user_image', 'users.first_name as user_firstName',  'users.last_name as user_lastName', 'users.email as user_Email', 'provinces.full_name as province', 'districts.full_name as districts')
-            ->select('bookings.id as booking_id', 'bookings.property_id as booking_propertyId', 'bookings.user_id as booking_userID', 'bookings.check_in_date as booking_checkInDate', 'bookings.check_out_date as booking_checkOutDate', 'property_images.image as property_image', 'properties.user_id as propertyUserId', 'properties.name as Property_Name', 'properties.address as Property_Address', 'users.image as user_image', 'users.first_name as user_firstName',  'users.last_name as user_lastName', 'users.email as user_Email')
-            ->join('property_images', 'property_images.property_id', '=', 'bookings.property_id')
+            ->select(
+                'bookings.property_id',
+                'bookings.user_id',
+                'bookings.check_in_date',
+                'bookings.check_out_date',
+                'properties.user_id AS property_user_id',
+                'properties.address',
+                'users.first_name',
+                'users.last_name',
+                'users.image AS user_image',
+                'property_images.image AS property_image',
+                'provinces.full_name AS province_full_name',
+                'districts.full_name AS district_full_name'
+            )
             ->join('properties', 'properties.id', '=', 'bookings.property_id')
-            ->join('users', 'users.id', '=', 'properties.user_id')
-            // ->join('provinces', 'provinces.code', '=', 'properties.provinces_id')
-            // ->join('districts', 'districts.code', '=', 'properties.districts_id')
-            ->where('bookings.user_id', $user->id)
+            ->join('users', 'users.id', '=', 'bookings.user_id')
+            ->join('property_images', 'property_images.property_id', '=', 'bookings.property_id')
+            ->join('provinces', 'provinces.code', '=', 'properties.provinces_id')
+            ->join('districts', 'districts.code', '=', 'properties.districts_id')
+            ->where('properties.user_id', $user->id)
             ->groupBy('bookings.id')
-            ->paginate($perPage);       
+            ->paginate($perPage);
+
         return $bookings;
     }
 }
