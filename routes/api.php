@@ -1,23 +1,27 @@
 <?php
 
-use App\Models\PropertyType;
+use App\Models\Property;
 
+use App\Models\BlogOfCate;
+use App\Models\PropertyType;
 use Illuminate\Http\Request;
+use App\Models\PropertyImage;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ChatController;
-use App\Http\Controllers\PropertyController;
-use App\Http\Controllers\AmenityController;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\BlogCategoryController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\ChatController;
+use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DistrictController;
+use App\Http\Controllers\PropertyController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\RoomTypeController;
-use App\Http\Controllers\PropertyTypeController;
+
 use App\Http\Controllers\TransactionController;
-use App\Models\BlogOfCate;
+use App\Http\Controllers\BlogCategoryController;
+use App\Http\Controllers\PropertyTypeController;
+use App\Http\Controllers\PropertyExceptionDateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,13 +38,16 @@ use App\Models\BlogOfCate;
 Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('/user', function (Request $request) {
     $user = $request->user();
+    if ($user->image) {
+      $user->image = asset("storage/images/users/" . $user->image);
+    }
     $token = $request->bearerToken();
     return response(compact('user', 'token'));
   });
 
   Route::get('/user/{id}', [UserController::class, 'readById']);
   Route::post('/updateUser', [UserController::class, 'updateUser']);
-  Route::post('/uploadImage', [UserController::class, 'uploadImage']);
+  Route::post('/uploadImageUser', [UserController::class, 'uploadImage']);
   Route::post('/admin/signup', [UserController::class, 'signupAdmin']);
   Route::post('/logout', [UserController::class, 'logout']);
 
@@ -82,48 +89,55 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
   Route::post('/create-property', [PropertyController::class, 'create']);
   Route::post('/read-properties', [PropertyController::class, 'read']);
-  Route::post('/update-property', [PropertyController::class, 'update']);
+  Route::post('/update-property', [PropertyController::class, 'updateProperty']);
   Route::get('/delete-property/{id}', [PropertyController::class, 'delete']);
   Route::get('/read-properties-status', [PropertyController::class, 'readCurrentPageStatus']);
   Route::get('/read-property/{id}', [PropertyController::class, 'readById']);
   Route::post('property/accept', [PropertyController::class, 'acceptProperty']);
   Route::post('property/deny', [PropertyController::class, 'denyProperty']);
 
-  Route::post("blog/uploadImage", [BlogController::class, 'uploadImage']);
   Route::post('sendMessage', [ChatController::class, 'sendMessage']);
   Route::get('getMessage/', [ChatController::class, 'getMessage']);
   Route::get('getAllUser', [ChatController::class, 'getAllUser']);
+  
+  Route::post('user-booking', [BookingController::class, 'createBooking']);
+  Route::get('getBookingByUser', [BookingController::class, 'getBookingByUser']);
+  Route::get('property-list', [PropertyController::class, 'listingProperty']);
+  Route::get('read-property-to-update', [PropertyController::class, 'readPropertyToUpdate']);
+
+  Route::post('add-exception-date', [PropertyExceptionDateController::class, 'create']);
+
+
+  Route::post('/create-payment-intent', [TransactionController::class, 'createPaymentIntent']);
+  Route::post('/successBooking', [TransactionController::class, 'success']);
+  Route::get('/readSuccessBooking', [TransactionController::class, 'readSuccess']);
+  Route::get('readBooking', [BookingController::class, 'readBooking']);
+
+
+  //blog route
 
   Route::post('createBlog', [BlogController::class, 'create']);
   Route::post('updateBlog', [BlogController::class, 'update']);
-  Route::get('readBlog', [BlogController::class, 'read']);
   Route::get('deleteBlog/{id}', [BlogController::class, 'delete']);
   Route::get('readCurrentPage', [BlogController::class, 'readCurrentPage']);
-  Route::get('filterByIdBlog', [BlogController::class, 'filterById']);
-
   Route::post('/uploadImage', [BlogController::class, 'uploadImage']);
-
   Route::post('createBlogCategory', [BlogCategoryController::class, 'create']);
   Route::post('updateBlogCategory', [BlogCategoryController::class, 'update']);
-  Route::get('readBlogCategory', [BlogCategoryController::class, 'read']);
   Route::get('deleteBlogCategory/{id}', [BlogCategoryController::class, 'delete']); //viết done
   Route::get('readCateCurrentPage', [BlogCategoryController::class, 'readCurrentPage']);
-  Route::get('filterByIdBlogCategory', [BlogCategoryController::class, 'filterById']);
-
-
-  Route::post('user-booking', [BookingController::class, 'createBooking']);
-  Route::post('create-transaction', [TransactionController::class, 'createTransaction']);
-
-
-  Route::get('getBookingByUser', [BookingController::class, 'getBookingByUser']);
-
-  Route::get('property-list', [PropertyController::class, 'listingProperty']);
 });
 
 //public route
+
+Route::get('readBlogCategory', [BlogCategoryController::class, 'read']);
+Route::get('filterByIdBlogCategory', [BlogCategoryController::class, 'filterById']);
+Route::get('search/{key}', [BlogController::class, 'search']);
+Route::get('filterByIdBlog', [BlogController::class, 'filterById']);
+Route::get('readBlog', [BlogController::class, 'read']);
+
+
 Route::get('check-email-unique', [UserController::class, 'checkEmailUnique']);
 Route::get('showUserPropertyById', [PropertyController::class, 'showUserPropertyById']);
-Route::post('readBlog', [BlogController::class, 'read']);
 Route::get('show-property-index', [PropertyController::class, 'showInIndex']);
 Route::get('readCategory', [CategoryController::class, 'read']);
 Route::get('/readPropertyType', [PropertyTypeController::class, 'read']);

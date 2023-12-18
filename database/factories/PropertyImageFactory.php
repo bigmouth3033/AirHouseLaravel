@@ -21,7 +21,7 @@ class PropertyImageFactory extends Factory
     public function definition(): array
     {
         $files = File::allFiles('storage\app\public\images\host');
-        // $files = File::allFiles('');
+
         $images = [];
         foreach ($files as $file) {
             $filePath = $file->getFilename();

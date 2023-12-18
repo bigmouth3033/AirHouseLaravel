@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Amenity;
+use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
+use App\Models\Amenity;
 use App\Models\Property;
-use App\Models\PropertyAmenity;
 use Illuminate\Http\Request;
 use App\Models\PropertyImage;
+use App\Models\PropertyAmenity;
+use App\Models\PropertyExceptionDate;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class PropertyController extends Controller
 {
@@ -41,11 +42,9 @@ class PropertyController extends Controller
         $Property->start_date = $request->input('start_date');
         $Property->end_date = $request->input('end_date');
         $Property->base_price = $request->input('base_price');
-        $Property->booking_per = $request->input('booking_per');
         $Property->booking_type = $request->input('booking_type');
         $Property->check_in_after = $request->input('check_in_after');
         $Property->check_out_before = $request->input('check_out_before');
-        $Property->cancelation = $request->input('cancelation');
         $Property->minimum_stay = $request->input('minimum_stay');
         $Property->maximum_stay = $request->input('maximum_stay');
         $Property->property_status = $request->input('property_status');
@@ -89,10 +88,30 @@ class PropertyController extends Controller
             }
         }
 
+        $exceptions = $request->exception;
+
+        $oldException = PropertyExceptionDate::where('property_id', $request->property_id)->get();
+
+        if ($oldException) {
+            foreach ($oldException as $exception) {
+                $exception->delete();
+            }
+        }
+
+        foreach ($exceptions as $exception) {
+            $newException = new PropertyExceptionDate();
+            $exception = json_decode($exception);
+            $newException->property_id = $Property->id;
+            $newException->start_date = $exception->start;
+            $newException->end_date = $exception->end;
+            $newException->save();
+        }
+
 
         return response()->json([
             'success' => true,
             'message' => "added ok",
+            'id' => $Property->id
         ]);
     }
 
@@ -173,6 +192,12 @@ class PropertyController extends Controller
         }
         $collection = $newCollection;
 
+        foreach ($collection as $property) {
+            if ($property->user->image) {
+                $property->user->image = asset("storage/images/users/" . $property->user->image);
+            }
+        }
+
         return response()->json([
             'items' => $collection,
             'total' => $count,
@@ -182,15 +207,20 @@ class PropertyController extends Controller
 
     public function readById($id)
     {
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('id', $id)->first();
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images', 'exception_date')->where('id', $id)->first();
 
         foreach ($property->images as $key => $image) {
             $property->images[$key] = asset("storage/images/host/" . $image->image);
         }
 
+        if ($property->user->image) {
+            $property->user->image = asset("storage/images/users/" . $property->user->image);
+        }
+
         if ($property) {
             return response($property);
         }
+
 
         return response(['mesasge' => 'not found'], 404);
     }
@@ -269,9 +299,9 @@ class PropertyController extends Controller
         $property = $property->where('acception_status', 'accept');
         $property = $property->where('property_status', 1);
 
-        $now = now();
-        $property = $property->where('start_date', '<=', $now);
-        $property = $property->where('end_date', '>=', $now);
+        $now = now()->toDateString();
+
+        // $property = $property->whereDate('end_date', '>=', $now);
 
         $property = $property->get();
 
@@ -284,17 +314,12 @@ class PropertyController extends Controller
         return response($property);
     }
 
-
     public function showUserPropertyById(Request $request)
     {
         $property_id = $request->id;
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images', 'booking')->where('id', $property_id);
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images', 'booking', 'exception_date')->where('id', $property_id);
         $property = $property->where('acception_status', 'accept');
         $property = $property->where('property_status', 1);
-
-        $now = now();
-        $property = $property->where('start_date', '<=', $now);
-        $property = $property->where('end_date', '>=', $now);
 
         $property = $property->first();
 
@@ -306,6 +331,8 @@ class PropertyController extends Controller
             foreach ($property->amenities as $key => $amenity) {
                 $property->amenities[$key]->icon_image = asset("storage/images/amenities/" . $amenity->icon_image);
             }
+
+            $property->user->image = asset("storage/images/users/" . $property->user->image);
             return response($property, 200);
         } else {
             return response()->json([
@@ -314,39 +341,22 @@ class PropertyController extends Controller
         }
     }
 
-    public function update(Request $request)
+    public function updateProperty(Request $request)
     {
+        $Property = Property::find($request->id);
 
-        $request->validate([
-            'name' => 'required|string| max:255',
-            'description' => 'required|string',
-            // 'user_id' => 'required|int',
-            'property_type_id' => 'required|int',
-            'room_type_id' => 'required|int',
-            'category_id' => 'required|int',
-            'provinces_id' => 'required|string',
-            'districts_id' => 'required|string',
-            'address' => 'required|string',
-            'bedroom_count' => 'required|int',
-            'bed_count' => 'required|int',
-            'bathroom__count' => 'required|int',
-            'accomodates_count' => 'required|int',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date',
-            'price' => 'required|numeric',
-            'minimum_stay' => 'required|int',
-
-            // 'image' => 'required',
-            'image.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-        ]);
-        $id = $request->input('id');
-        $Property = Property::where('id', $id)->first();
-        // $PropertyImage = new PropertyImage();
         $user = auth()->user();
         $user_id = $user->id;
+        $Property->user_id = $user_id; // Gán 'user_id' trước khi gán 'add_by_user'
         $Property->name = $request->input('name');
         $Property->description = $request->input('description');
-        $Property->user_id = $user_id; // Gán 'user_id' trước khi gán 'add_by_user'
+        $Property->about_place = $request->input('about_place');
+        $Property->place_great_for = $request->input('place_great_for');
+        $Property->guest_access = $request->input('guest_access');
+        $Property->interaction_guest = $request->input('interaction_guest');
+        $Property->thing_to_note = $request->input('thing_to_note');
+        $Property->overview = $request->input('overview');
+        $Property->getting_around = $request->input('getting_around');
         $Property->property_type_id = $request->input('property_type_id');
         $Property->room_type_id = $request->input('room_type_id');
         $Property->category_id = $request->input('category_id');
@@ -354,86 +364,102 @@ class PropertyController extends Controller
         $Property->districts_id = $request->input('districts_id');
         $Property->address = $request->input('address');
         $Property->bedroom_count = $request->input('bedroom_count');
-        $Property->bed_count = $request->input('bed_count');
-        $Property->bathroom__count = $request->input('bathroom__count');
+        $Property->bathroom_count = $request->input('bathroom_count');
         $Property->accomodates_count = $request->input('accomodates_count');
         $Property->start_date = $request->input('start_date');
         $Property->end_date = $request->input('end_date');
-        $Property->price = $request->input('price');
+        $Property->base_price = $request->input('base_price');
+        $Property->booking_type = $request->input('booking_type');
+        $Property->check_in_after = $request->input('check_in_after');
+        $Property->check_out_before = $request->input('check_out_before');
         $Property->minimum_stay = $request->input('minimum_stay');
+        $Property->maximum_stay = $request->input('maximum_stay');
+        $Property->property_status = $request->input('property_status');
+        $Property->video = $request->input('video');
+        $Property->acception_status = "waiting";
         $Property->save();
 
+        $images = PropertyImage::where('property_id', $request->id)->get();
 
-        if ($request->hasFile('image')) {
-            $files = $request->file('image');
-            if (!empty($files)) {
-                //Neu co update anh thi xoa anh cu trong server
-                $PropertyImage = PropertyImage::where('property_id', $id)->get();
-                foreach ($PropertyImage as $flieImage) {
-                    Storage::delete('public/images/host/' . $flieImage->image);
-                    $flieImage->delete();
-                }
-                //them anh moi
-                foreach ($files as $file) {
-                    // Lưu tệp vào thư mục lưu trữ
-                    $newFileName = 'images_host_' . Uuid::uuid4()->toString() . '_' . $file->getClientOriginalName();
-                    $uploadedFilePath = $file->storeAs('public/images/host', $newFileName);
+        foreach ($images as $image) {
+            Storage::delete('public/images/host/' . $image->image);
+            $image->delete();
+        }
 
-                    if (!$uploadedFilePath) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Lỗi khi lưu tệp lên máy chủ.'
-                        ]);
-                    }
+        $files = $request->file('images', []);
 
-                    // Lưu thông tin tệp vào cơ sở dữ liệu
-                    $PropertyImage = new PropertyImage;
-                    $PropertyImage->image = $newFileName;
-                    $PropertyImage->property_id = $Property->id;
-                    $PropertyImage->add_by_user = $user_id;
-                    $PropertyImage->save();
+        foreach ($files as $file) {
+            $newFileName = 'images_host_' . Uuid::uuid4()->toString() . '_' . $file->getClientOriginalName();
+            $uploadedFilePath = $file->storeAs('public/images/host', $newFileName);
 
-                    if (!$PropertyImage->save()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Lỗi khi lưu thông tin tệp vào cơ sở dữ liệu.'
-                        ]);
-                    }
-                }
-                return response()->json([
-                    'success' => true,
-                    'message' => "updated ok",
-                    'property' => $Property,
-                    'property_images' => PropertyImage::where('property_id', $Property->id)->get() // Thêm dòng này
-                ]);
-            } else {
+            if (!$uploadedFilePath) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Không có tệp nào được chọn nen giu tep cu.'
+                    'message' => 'Lỗi khi lưu tệp lên máy chủ.'
+                ]);
+            }
+
+            $PropertyImage = new PropertyImage();
+            $PropertyImage->image = $newFileName;
+            $PropertyImage->property_id = $Property->id;
+            $PropertyImage->add_by_user = $user_id;
+            $PropertyImage->save();
+            if (!$PropertyImage->save()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Lỗi khi lưu thông tin tệp vào cơ sở dữ liệu.'
                 ]);
             }
         }
-        $listPropertyImage = PropertyImage::where('property_id', $id)->pluck('image');
 
-        // $listPropertyImage = $listPropertyImage->map(function ($image) {
-        //     return asset('storage/images/host/' . $image);
-        // });
-        $listPropertyImage->transform(function ($image) {
-            return asset('storage/images/host/' . $image);
-        });
-        //Lay tp, quan
-        // $Property->provinces_id = Province::where('code', $Property->provinces_id)->value('full_name');
-        // $Property->districts_id = District::where('code', $Property->districts_id)->value('full_name');
-        // //Property_type
-        // $Property->property_type_id = PropertyType::where('id', $Property->property_type_id)->value('name');
-        // $Property->room_type_id = RoomType::where('id', $Property->room_type_id)->value('name');
-        // $Property->category_id = Category::where('id', $Property->category_id)->value('name');
+        $amenities = PropertyAmenity::where('property_id', $request->id)->get();
+
+        foreach ($amenities as $amenity) {
+            $amenity->delete();
+        }
+
+        $amenities = $request->input('amenities');
+
+        if ($amenities) {
+            foreach ($amenities as $amenityID) {
+                $amenity = new PropertyAmenity();
+                $amenity->property_id = $Property->id;
+                $amenity->amenity_id = $amenityID;
+                $amenity->save();
+            }
+        }
+
+        $exceptions = $request->exception;
+
+        $oldException = PropertyExceptionDate::where('property_id', $Property->id)->get();
+
+        if ($oldException) {
+            foreach ($oldException as $exception) {
+                $exception->delete();
+            }
+        }
+
+        if ($exceptions) {
+            foreach ($exceptions as $exception) {
+                $newException = new PropertyExceptionDate();
+                $exception = json_decode($exception);
+                $newException->property_id = $Property->id;
+                $newException->start_date = $exception->start;
+                $newException->end_date = $exception->end;
+                $newException->save();
+            }
+        }
+
+
+
         return response()->json([
             'success' => true,
-            'property_image' => $listPropertyImage,
-            'properties' => $Property
+            'message' => "added ok",
         ]);
     }
+
+
+
     public function delete($id)
     {
         $Property = Property::find($id);
@@ -460,14 +486,20 @@ class PropertyController extends Controller
 
     public function listingProperty(Request $request)
     {
-        $collection = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images');
+        $collection = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('user_id', $request->user()->id);
 
+
+        $now = now()->toDateString();
         if ($request->status == "listed") {
             $collection = $collection->where("property_status", 1);
+            $collection = $collection->where('acception_status', 'accept');
+            $collection = $collection->whereDate('end_date', '>=', $now);
         }
 
         if ($request->status == "unlisted") {
-            $collection = $collection->where("property_status", 0);
+            $collection = $collection->where(function ($query)  use ($now) {
+                $query->where('property_status', 0)->orWhere('end_date', '<', $now)->orWhere('acception_status', '!=', 'accept');
+            });
         }
 
         $count = $collection->count();
@@ -498,5 +530,36 @@ class PropertyController extends Controller
             'items' => $collections,
             'total' => $count,
         ]);
+    }
+
+    public function readPropertyToUpdate(Request $request)
+    {
+        $property_id = $request->id;
+        $user_id = $request->user()->id;
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images', 'booking', 'exception_date')->where('id', $property_id);
+
+        $property = $property->first();
+
+        if ($property) {
+            if ($property->user_id != $user_id) {
+                return response()->json([
+                    "error" => "Wrong user"
+                ], 403);
+            }
+
+            foreach ($property->images as $key => $image) {
+                // $property->images[$key] = asset("storage/images/host/" . $image->image);
+                $property->images[$key] = base64_encode(Storage::get('public/images/host/' . $image->image));
+            }
+            foreach ($property->amenities as $key => $amenity) {
+                $property->amenities[$key]->icon_image = asset("storage/images/amenities/" . $amenity->icon_image);
+            }
+
+            return response($property, 200);
+        } else {
+            return response()->json([
+                "error" => "Not found property"
+            ], 404);
+        }
     }
 }

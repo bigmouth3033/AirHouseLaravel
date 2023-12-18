@@ -66,15 +66,22 @@ class BlogController extends Controller
             'id_category' => 'int',
         ]);
 
-        //để hiển thị bài viết chi tiết
-        $Blog = '';
-        if ($request->input('id_blog')) {
-            $id_blog = $request->input('id_blog');
-            $id_category = $request->input('id_category');
-            $Blog = Blog::where('id', $id_blog)->first();
+
+        // $Blogs = Blog::all();
+        $Blogs =  Blog::with('categories')->whereNotNull('image')->get();
+        foreach ($Blogs as $Blog) {
             $imageName = $Blog->image;
-            $imageUrl = asset('storage/images/blogs/' . $imageName);
+            $Blog->image = asset('storage/images/blogs/' . $imageName);
         }
+
+        //để hiển thị bài viết chi tiết
+        // if ($request->input('id_blog')) {
+        //     $id_blog = $request->input('id_blog');
+        //     $id_category = $request->input('id_category');
+        //     $Blog = Blog::where('id', $id_blog)->first();
+        //     $imageName = $Blog->image;
+        //     $Blog->image = asset('storage/images/blogs/' . $imageName);
+        // }
         //để hiển thị bài viết dựa trên category
         $ListBlogThroughCateID =  [];
         if ($request->input('id_category')) {
@@ -87,10 +94,11 @@ class BlogController extends Controller
         }
         return response()->json([
             "success" => true,
-            "data through blog_id" => $Blog,
-            "imageUrl" => $imageUrl,
+            // "data through blog_id" => $Blog,
+            // "imageUrl" => $imageUrl,
             "data through category_id" => $ListBlogThroughCateID,
-        ]);
+            "items" => $Blogs
+        ], 200);
     }
 
     public function update(Request $request)
@@ -209,5 +217,16 @@ class BlogController extends Controller
                 'status' => 403
             ]);
         }
+    }
+
+    public function search($key)
+    {
+        $Blogs =   Blog::where('title', 'like', "%$key%")->get();
+        foreach ($Blogs as $Blog) {
+            $imageName = $Blog->image;
+            $Blog->image = asset('storage/images/blogs/' . $imageName);
+        }
+
+        return response()->json($Blogs);
     }
 }
