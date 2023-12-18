@@ -218,4 +218,15 @@ class BlogController extends Controller
             ]);
         }
     }
+
+    public function search($key)
+    {
+        $Blogs =   Blog::where('title', 'like', "%$key%")->get();
+        foreach ($Blogs as $Blog) {
+            $imageName = $Blog->image;
+            $Blog->image = asset('storage/images/blogs/' . $imageName);
+        }
+
+        return response()->json($Blogs);
+    }
 }

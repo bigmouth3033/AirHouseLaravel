@@ -100,6 +100,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('deleteBlog/{id}', [BlogController::class, 'delete']);
   Route::get('readCurrentPage', [BlogController::class, 'readCurrentPage']);
   Route::get('filterByIdBlog', [BlogController::class, 'filterById']);
+  Route::get('search/{key}', [BlogController::class, 'search']);
 
   Route::post('/uploadImage', [BlogController::class, 'uploadImage']);
 
