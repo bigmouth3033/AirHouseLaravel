@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StartController;
 use App\Http\Controllers\TransactionController;
 
 use Illuminate\Http\Request;
@@ -105,13 +106,22 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('getMessage/', [ChatController::class, 'getMessage']);
   Route::get('getAllUser', [ChatController::class, 'getAllUser']);
 
-  //
+  //booings
   Route::post('user-booking', [BookingController::class, 'createBooking']);
   Route::post('create-transaction', [TransactionController::class, 'createTransaction']);
-  
+
+  //payment
+
+  Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
+  Route::post('/successBooking', [PaymentController::class, 'success']);
+  Route::get('/readSuccessBooking', [PaymentController::class, 'readSuccess']);
+
+  //starts
+  Route::post('/createStart',[StartController::class, 'createStart']) ;
+  Route::get('/readStart',[StartController::class, 'readStart']) ;
+  Route::get('filterByIdProperty', [PropertyController::class, 'readById']);
+  Route::get('readBooking', [BookingController::class, 'readBooking']);
 });
-Route::get('filterByIdProperty',[PropertyController::class , 'readById']);
-Route::get('readBooking', [BookingController::class, 'readBooking']);
 
 //public route
 Route::get('check-email-unique', [UserController::class, 'checkEmailUnique']);
@@ -128,9 +138,3 @@ Route::get("/getDistrictAll", [DistrictController::class, 'get']);
 Route::get("/getDistrict/province/{provinceID}", [DistrictController::class, 'getBasedOnProvinces']);
 Route::post('/signup', [UserController::class, 'signup']);
 Route::post('/login', [UserController::class, 'login']);
-//payment
-                                                            
-Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
-Route::get('/successBooking', [PaymentController::class, 'success']);
-
-Route::get('/readSuccessBooking', [PaymentController::class, 'readSuccess']);

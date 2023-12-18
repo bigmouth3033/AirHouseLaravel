@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\PropertyType;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -22,13 +24,28 @@ class BookingController extends Controller
         $booking->total_person = $request->total_person;
         $booking->booking_status = 'success';
         $booking->save();
-        
+
         return response($booking, 200);
     }
-    
-    public function readBooking(Request $request){
+
+    public function readBooking(Request $request)
+    {
+        $user = auth()->user();
+        $renter_id = $user->id;
         
         $booking = Booking::where("id" , $request->booking_id)->first();
-        return response($booking, 200);
+        $booking = Booking::with('property')
+        ->where('id', $request->booking_id)
+        ->where('user_id', $renter_id)
+        ->first();
+
+        $propertyName = PropertyType::find($booking->property->property_type_id);
+        $userName = User::find($booking->property->user_id);
+
+        return response()->json([
+            'booking' => $booking,
+            'PropertyName' => $propertyName->name,
+            'userName' => $userName
+        ]);
     }
 }
