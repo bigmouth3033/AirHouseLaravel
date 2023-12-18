@@ -123,7 +123,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('/uploadImage', [BlogController::class, 'uploadImage']);
   Route::post('createBlogCategory', [BlogCategoryController::class, 'create']);
   Route::post('updateBlogCategory', [BlogCategoryController::class, 'update']);
-  Route::get('deleteBlogCategory/{id}', [BlogCategoryController::class, 'delete']); //viết done
+  Route::get('deleteBlogCategory/{id}', [BlogCategoryController::class, 'delete']);
   Route::get('readCateCurrentPage', [BlogCategoryController::class, 'readCurrentPage']);
 });
 
