@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Chat;
 use App\Events\ChatEvent;
 use App\Models\ChatModel;
+use App\Models\Province;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
@@ -14,19 +16,23 @@ class ChatController extends Controller
 {
     function sendMessage(Request $request)
     {
-        $user1 = $request->user()->email;
-        $user2 = $request->user2;
+        $user_from_email = $request->user()->email;
+        $user_to_email = $request->user_to_email;
         $message = $request->message;
 
-        event(new ChatEvent($user1, $user2, $message));
+        event(new ChatEvent($user_from_email, $user_to_email, $message));
 
         $chat = new Chat();
-        $chat->from_email = $user1;
-        $chat->to_email = $user2;
+        $chat->from_email = $user_from_email;
+        $chat->to_email = $user_to_email;
         $chat->body = $message;
         $chat->save();
 
-        return response($chat);
+        return response()->json([
+        '$user_from_email'=>$user_from_email,
+        '$user_to_email' => $user_to_email,
+        'message' => $message 
+        ]);
     }
 
     function getMessage(Request $request)
@@ -80,5 +86,13 @@ class ChatController extends Controller
             ->whereIn('email', $AllUser)
             ->get();
         return $users;
+    }
+    function test(){        
+            $rs =Province::pluck('code');
+            $code = fake()->randomElement($rs);
+            return response()->json([
+                '$rs' =>$rs,
+                'code' =>$code
+            ]);
     }
 }

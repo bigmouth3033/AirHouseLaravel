@@ -139,3 +139,5 @@ Route::post('/login', [UserController::class, 'login']);
 
 
 Route::post('google-signup', [UserController::class, 'signUpGoogle']);
+
+Route::get('test',[ChatController::class,'test']);
