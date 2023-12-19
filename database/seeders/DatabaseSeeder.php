@@ -3,6 +3,9 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
+use App\Models\Property;
+use App\Models\PropertyImage;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -18,5 +21,31 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
+
+        // Property::factory()->count(2)->create();
+
+        $properties = Property::pluck('id');
+        foreach ($properties as $property) {
+            $property_images = PropertyImage::where('property_id', $property)->first();
+            if (!$property_images) {
+                for ($i = 0; $i < 5; $i++) {
+                    PropertyImage::factory()->state([
+                        'property_id' => $property
+                    ])->create();
+                }
+            }
+        }
+
+
+        // ///////////////////////////////////////////////////////////////////////////
+        // User::factory()->count(100)->create();
+
+
+        // Property::factory()->count(2000)->create();
+
+
+
+        ///////////////////////////////////////////////////////////////////////////
+
     }
 }

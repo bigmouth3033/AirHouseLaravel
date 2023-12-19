@@ -9,6 +9,7 @@ use App\Models\Province;
 use App\Models\RoomType;
 use App\Models\PropertyType;
 use App\Models\PropertyImage;
+use App\Models\PropertyExceptionDate;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -58,5 +59,16 @@ class Property extends Model
     public function amenities(): BelongsToMany
     {
         return $this->belongsToMany(Amenity::class, 'property_amenities', 'property_id', 'amenity_id');
+    }
+
+
+    public function booking(): HasMany
+    {
+        return $this->hasMany(Booking::class, 'property_id');
+    }
+
+    public function exception_date(): HasMany
+    {
+        return $this->hasMany(PropertyExceptionDate::class, 'property_id', 'id');
     }
 }

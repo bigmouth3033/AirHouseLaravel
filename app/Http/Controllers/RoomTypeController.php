@@ -11,14 +11,7 @@ class RoomTypeController extends Controller
 {
     function create(Request $request)
     {
-        $request->validate([
-            'name' => 'required|unique:room_type|max:50',
-            'icon_image' => 'required|image|mimes:png,jpg,jpeg|max:2048'
-        ]);
-
-
         $roomType = new RoomType();
-
         $imageName = time() . '_' . $request->file('icon_image')->extension();
         $request->file('icon_image')->storeAs('public/images/room_images', $imageName);
 
@@ -34,11 +27,7 @@ class RoomTypeController extends Controller
     public function update(Request $request)
     {
         $id = $request->input("id");
-        $request->validate([
-            'id' => 'required',
-            'name' => 'required|max:50',
-            'icon_image' => 'image|mimes:jpeg,png,jpg,gif,svg',
-        ]);
+
         $updateRoomType = RoomType::find($id);
 
         if (!$updateRoomType) {

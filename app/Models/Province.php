@@ -10,4 +10,5 @@ class Province extends Model
     use HasFactory;
     protected $table = 'provinces';
     protected $primaryKey = 'code';
+    protected $keyType = 'string';
 }
