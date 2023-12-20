@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Amenity;
 use App\Models\Property;
+use App\Models\PropertyAmenity;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

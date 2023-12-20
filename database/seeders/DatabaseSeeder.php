@@ -24,6 +24,18 @@ class DatabaseSeeder extends Seeder
 
         // Property::factory()->count(2)->create();
 
+        // $properties = Property::pluck('id');
+        // foreach ($properties as $property) {
+        //     $property_images = PropertyImage::where('property_id', $property)->first();
+        //     if (!$property_images) {
+        //         for ($i = 0; $i < 5; $i++) {
+        //             PropertyImage::factory()->state([
+        //                 'property_id' => $property
+        //             ])->create();
+        //         }
+        //     }
+        // }
+
         $properties = Property::pluck('id');
         foreach ($properties as $property) {
             $property_images = PropertyImage::where('property_id', $property)->first();
@@ -35,6 +47,8 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+
+
 
 
         // ///////////////////////////////////////////////////////////////////////////

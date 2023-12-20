@@ -17,6 +17,12 @@ class Booking extends Model
     {
         return $this->belongsTo(Property::class, 'property_id', 'id');
     }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
     public function propertyName(): HasOneThrough
     {
         return $this->hasOneThrough(Property::class, PropertyType::class);
