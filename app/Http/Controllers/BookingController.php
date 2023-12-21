@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Booking;
+use App\Models\Property;
 use App\Models\PropertyType;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -74,6 +76,79 @@ class BookingController extends Controller
             'booking' => $booking,
             'PropertyName' => $propertyName->name,
             'userName' => $userName
+        ]);
+    }
+
+    function getBookingByStatus(Request $request)
+    {
+        $perPage = 10;
+        $user = $request->user();
+        $status = $request->status;
+        DB::statement("SET SQL_MODE=''");
+        $bookings = DB::table('bookings')
+            ->select('bookings.id', 'bookings.property_id', 'bookings.user_id as id_user', 'bookings.check_in_date', 'bookings.check_out_date', 'property_images.image', 'properties.user_id', 'properties.name as Property_Name', 'properties.address as Property_Address', 'users.image as user_image', 'users.first_name as user_firstName',  'users.last_name as user_lastName', 'users.email as user_Email', 'provinces.full_name as province', 'districts.full_name as districts')
+            ->join('property_images', 'property_images.property_id', '=', 'bookings.property_id')
+            ->join('properties', 'properties.id', '=', 'bookings.property_id')
+            ->join('users', 'users.id', '=', 'properties.user_id')
+            ->join('provinces', 'provinces.code', '=', 'properties.provinces_id')
+            ->join('districts', 'districts.code', '=', 'properties.districts_id')
+            ->where('bookings.user_id', $user->id)
+            ->where('booking_status', $status)
+            ->groupBy('bookings.id')
+            ->paginate($perPage);
+
+
+        foreach ($bookings as $booking) {
+            $booking->image = asset("storage/images/host/" . $booking->image);
+        }
+        return $bookings;
+    }
+
+    function getBookingByExpired(Request $request)
+    {
+        $perPage = 10;
+        $user = $request->user();
+        $now = Carbon::now();
+
+        DB::statement("SET SQL_MODE=''");
+        $bookings = DB::table('bookings')
+            ->select('bookings.id', 'bookings.property_id', 'bookings.user_id as id_user', 'bookings.check_in_date', 'bookings.check_out_date', 'property_images.image', 'properties.user_id', 'properties.name as Property_Name', 'properties.address as Property_Address', 'users.image as user_image', 'users.first_name as user_firstName',  'users.last_name as user_lastName', 'users.email as user_Email', 'provinces.full_name as province', 'districts.full_name as districts')
+            ->join('property_images', 'property_images.property_id', '=', 'bookings.property_id')
+            ->join('properties', 'properties.id', '=', 'bookings.property_id')
+            ->join('users', 'users.id', '=', 'properties.user_id')
+            ->join('provinces', 'provinces.code', '=', 'properties.provinces_id')
+            ->join('districts', 'districts.code', '=', 'properties.districts_id')
+            ->where('bookings.user_id', $user->id)
+            ->where('check_in_date', '<', $now)
+            ->groupBy('bookings.id')
+            ->paginate($perPage);
+
+        foreach ($bookings as $booking) {
+            $booking->image = asset("storage/images/host/" . $booking->image);
+        }
+
+        return $bookings;
+    }
+
+
+
+
+
+
+    public function TestApi()
+    {
+        $users = User::pluck('id');
+        $user = fake()->randomElement($users);
+        $properties = Property::where('user_id', '!=', $user)->pluck('id');
+        $properties_2 = Property::pluck('id');
+
+
+
+
+        return response()->json([
+            '$user' => $user,
+            '$properties' => count($properties),
+            '$properties_2' => count($properties_2)
         ]);
     }
 }

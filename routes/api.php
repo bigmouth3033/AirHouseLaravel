@@ -102,6 +102,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   
   Route::post('user-booking', [BookingController::class, 'createBooking']);
   Route::get('getBookingByUser', [BookingController::class, 'getBookingByUser']);
+  
+
   Route::get('property-list', [PropertyController::class, 'listingProperty']);
   Route::get('read-property-to-update', [PropertyController::class, 'readPropertyToUpdate']);
 
@@ -125,6 +127,13 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('updateBlogCategory', [BlogCategoryController::class, 'update']);
   Route::get('deleteBlogCategory/{id}', [BlogCategoryController::class, 'delete']);
   Route::get('readCateCurrentPage', [BlogCategoryController::class, 'readCurrentPage']);
+
+
+
+  Route::post('getBookingByStatus',[BookingController::class,'getBookingByStatus']);
+  Route::post('getBookingByExpired',[BookingController::class,'getBookingByExpired']);
+
+
 });
 
 //public route
@@ -153,3 +162,5 @@ Route::post('/login', [UserController::class, 'login']);
 
 Route::post('google-signup', [UserController::class, 'signUpGoogle']);
 //
+
+Route::get('TestApi',[BookingController::class,'TestApi']);
