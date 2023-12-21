@@ -135,9 +135,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('/createComment', [CommentController::class, 'createComment']);
 });
 //rating
+Route::get('/get-all-rating', [RatingController::class, 'readStartAll']);
 Route::get('/readAverageStart', [RatingController::class, 'readAverageStart']);
 //comment
-Route::get('/readCommentPage',[CommentController::class, 'readCommentPage']);
+// Route::get('/readCommentPage',[CommentController::class, 'readCommentPage']);
 
 //public route
 

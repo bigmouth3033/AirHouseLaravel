@@ -32,23 +32,23 @@ class RatingController extends Controller
         //Ngược tại tạo một racord rating
         else {
             $booking = Booking::where('user_id', $renter_id)->where('property_id', $property_id);
-            $booking = $booking->where('booking_status',"success")->first();
+            $booking = $booking->where('booking_status', "success")->first();
             //Kiem tra xem cos booking chua va booking co suceess chua
             if ($booking) {
-                    $start = new Rating;
-                    $start->renter_id = $renter_id;
-                    $start->property_id = $request->property_id;
-                    $start->message = $request->preview;
-                    $start->start = $request->rating;
-                    $start->save();
-                    return response()->json([
-                        "start" => $start,
-                        "message" => "new"
-                    ]);
+                $start = new Rating;
+                $start->renter_id = $renter_id;
+                $start->property_id = $request->property_id;
+                $start->message = $request->preview;
+                $start->start = $request->rating;
+                $start->save();
+                return response()->json([
+                    "start" => $start,
+                    "message" => "new"
+                ]);
             } else {
                 return response()->json([
                     'message' => "not yet rented"
-                ],404);
+                ], 404);
             }
         }
     }
@@ -57,17 +57,16 @@ class RatingController extends Controller
         $user = auth()->user();
         $renter_id = $user->id;
 
-        $start = Rating::where('renter_id', $renter_id);
+        $start = Rating::with('user')->where('renter_id', $renter_id);
         $start = $start->where('property_id', $request->property_id);
         $start = $start->first();
-        if($start){
+        if ($start) {
 
             return response()->json([
                 'start' => $start
             ]);
-
-        }else{
-            return response("error",404);
+        } else {
+            return response("error", 404);
         }
     }
     public function readAverageStart(Request $request)
@@ -84,7 +83,26 @@ class RatingController extends Controller
         $average = $total / $count;
         $result = number_format($average, 1, '.', '');
         return response()->json([
-            "average" => $result
+            "average" => $result,
+            "total" => $count
         ]);
     }
+
+    public function readStartAll(Request $request)
+    {
+        $page = $request->currentPage;
+        $perpage = 4 * $page;
+        $count = Rating::with('user')->where('property_id', $request->property_id)->count();
+        $ratings = Rating::with('user')->where('property_id', $request->property_id)->orderBy("updated_at", "desc")->paginate($perpage);
+        
+        if ($ratings) {
+            return response()->json([
+                "ratings" => $ratings,
+                "total" => $count
+            ]);
+        }else {
+            return response("error", 404);
+        }
+    }
+    
 }

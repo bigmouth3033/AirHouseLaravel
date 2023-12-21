@@ -14,7 +14,7 @@ class BookingController extends Controller
     function createBooking(Request $request)
     {
         $booking = new Booking();
-
+        
         $booking->property_id = $request->property_id;
         $booking->user_id = $request->user()->id;
         $booking->check_in_date = $request->check_in_date;
@@ -69,11 +69,14 @@ class BookingController extends Controller
 
         $propertyName = PropertyType::find($booking->property->property_type_id);
         $userName = User::find($booking->property->user_id);
+        $renter = User::find($renter_id);
+         
 
         return response()->json([
             'booking' => $booking,
-            'PropertyName' => $propertyName->name,
-            'userName' => $userName
+            'propertyType' => $propertyName->name,
+            'hostName' => $userName,
+            'renter' => $renter,
         ]);
     }
 }

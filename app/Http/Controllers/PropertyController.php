@@ -299,7 +299,7 @@ class PropertyController extends Controller
         $property = $property->where('acception_status', 'accept');
         $property = $property->where('property_status', 1);
 
-        $now = now()->toDateString();
+        // $now = now()->toDateString();
 
         // $property = $property->whereDate('end_date', '>=', $now);
 
@@ -322,8 +322,6 @@ class PropertyController extends Controller
         $property = $property->where('property_status', 1);
 
         $property = $property->first();
-
-
         if ($property) {
             foreach ($property->images as $key => $image) {
                 $property->images[$key] = asset("storage/images/host/" . $image->image);

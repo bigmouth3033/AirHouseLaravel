@@ -26,7 +26,7 @@ class CommentController extends Controller
     {
         $page = $request->pageNumber;
         $property_id = $request->property_id;
-        $currentPage = $page * 5;
+       $currentPage = $page * 5; 
         $total = Comment::where('property_id', $property_id)->count();
         if ($currentPage < $total) {
             $listComment = Comment::where('property_id', $property_id)->orderBy('created_at', 'desc')->paginate($currentPage);
