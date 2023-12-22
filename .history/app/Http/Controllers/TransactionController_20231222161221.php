@@ -48,7 +48,6 @@ class TransactionController extends Controller
 
         //Update booking information for booking
         $booking = Booking::where('id',  $booking_id)->first();
-
         if ($booking && $paymentid) {
             $booking->booking_status = "success";
             $booking->save();
@@ -61,9 +60,9 @@ class TransactionController extends Controller
             $transaction->reciever_id  = $booking->user_id;
             $transaction->payee_id  = $property->user_id;
             $transaction->booking_id = $booking_id;
-            $transaction->amount = $booking->price_for_stay;
-            $transaction->host_fee = $booking->price_for_stay * 0.14;
-            $transaction->site_fees = $booking->site_fees;
+            $transaction->host_fee = $booking->amout * 0.14;
+            $transaction->site_fees = $booking->amout * 0.06;
+            $transaction->amout = $booking->amount;
             $transaction->transfer_on = now()->toDateTimeString();
             $transaction->save();
             return response()->json([
