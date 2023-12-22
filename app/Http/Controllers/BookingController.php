@@ -5,29 +5,63 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Booking;
 use App\Models\PropertyType;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use LengthException;
 
 class BookingController extends Controller
 {
     //
     function createBooking(Request $request)
     {
-        $booking = new Booking();
-        
-        $booking->property_id = $request->property_id;
-        $booking->user_id = $request->user()->id;
-        $booking->check_in_date = $request->check_in_date;
-        $booking->check_out_date = $request->check_out_date;
-        $booking->price_per_day = $request->base_price;
-        $booking->price_for_stay = $request->total;
-        $booking->site_fees = $request->site_fees;
-        $booking->booking_date = now()->toDateString();
-        $booking->total_person = $request->total_person;
-        $booking->booking_status = 'accepted';
-        $booking->save();
+        $now = today()->toDateString();
+        //list check_in_date
+        $booking_in = Booking::where('check_in_date', '>=', $now);
+        $booking_in = $booking_in->where('property_id', '>=', $request->property_id);
+        $booking_in = $booking_in->pluck('check_in_date')->toArray();
+        //list check_out_date
+        $booking_out = Booking::where('check_in_date', '>=', $now);
+        $booking_out = $booking_out->where('property_id', '>=', $request->property_id);
+        $booking_out = $booking_out->pluck('check_out_date')->toArray();
 
-        return response($booking, 200);
+        $listBookedDate = [];
+        $cnt = 0;
+        foreach ($booking_in as $bookingIn) {
+            $bookingIn = Carbon::parse($bookingIn);
+            $bookingOut = Carbon::parse($booking_out[$cnt]);
+            for ($date = $bookingIn; $date->lte($bookingOut); $date->addDay()) {
+                $listBookedDate[] = $date->toDateString();
+            }
+            $cnt++;
+        }
+        //Xu ly yeu cau cu client dang muon book
+        $checkInDate = Carbon::parse($request->check_in_date);
+        $checkOutDate = Carbon::parse($request->check_out_date);
+        // Tạo mảng chứa tất cả các ngày giữa check_in_date và check_out_date ma client dangv muon book
+        $datesInRange = [];
+        for ($date = $checkInDate; $date->lte($checkOutDate); $date->addDay()) {
+            $datesInRange[] = $date->toDateString();
+        }
+
+        if (array_intersect($listBookedDate, $datesInRange)) {
+            return response("error: maching date", 403);
+        } else {
+            $booking = new Booking();
+            $booking->property_id = $request->property_id;
+            $booking->user_id = $request->user()->id;
+            $booking->check_in_date = $request->check_in_date;
+            $booking->check_out_date = $request->check_out_date;
+            $booking->price_per_day = $request->base_price;
+            $booking->price_for_stay = $request->total;
+            $booking->site_fees = $request->site_fees;
+            $booking->booking_date = now()->toDateString();
+            $booking->total_person = $request->total_person;
+            $booking->booking_status = 'accepted';
+            $booking->save();
+
+            return response($booking, 200);
+        }
     }
 
 
@@ -70,7 +104,7 @@ class BookingController extends Controller
         $propertyName = PropertyType::find($booking->property->property_type_id);
         $userName = User::find($booking->property->user_id);
         $renter = User::find($renter_id);
-         
+
 
         return response()->json([
             'booking' => $booking,
