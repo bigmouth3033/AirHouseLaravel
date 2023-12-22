@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NoficationEvent;
 use App\Models\Chat;
 use App\Events\ChatEvent;
 use App\Models\ChatModel;
@@ -21,6 +22,7 @@ class ChatController extends Controller
         $message = $request->message;
 
         event(new ChatEvent($user_from_email, $user_to_email, $message));
+        event(new NoficationEvent($user_from_email, $user_to_email, $message));
 
         $chat = new Chat();
         $chat->from_email = $user_from_email;
