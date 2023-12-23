@@ -10,10 +10,9 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ChatEvent implements ShouldBroadcast
+class NotificationEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
     public $from_email;
     public $to_email;
     public $body;
@@ -27,10 +26,7 @@ class ChatEvent implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        $name = [$this->from_email, $this->to_email];
-        sort($name);
-
-        return [join("-", $name)];
+        return [$this->to_email];
     }
 
     public function broadcastAs()

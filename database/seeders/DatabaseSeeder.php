@@ -10,6 +10,7 @@ use Illuminate\Support\Arr;
 use App\Models\PropertyImage;
 use App\Models\PropertyAmenity;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -51,20 +52,19 @@ class DatabaseSeeder extends Seeder
         //     }
         // }
 
+        $amenites = Amenity::pluck('id');
         $properties = Property::pluck('id');
         foreach ($properties as $property) {
-            $amenites = Amenity::pluck('id');
             $amenites_array = [];
             foreach ($amenites as $amenity) {
                 $amenites_array[] = $amenity;
             }
-            $randomUniqueAmenites = Arr::random($amenites_array, fake()->numberbetween(7, 10));
-            foreach ($randomUniqueAmenites as $randomUniqueAmenity) {
-                PropertyAmenity::factory()->state([
+            $randomAmenites = array_unique(Arr::random($amenites_array, fake()->numberBetween(5, 10)));
+            foreach ($randomAmenites as $item) {
+                DB::table('property_amenities')->insert([
                     'property_id' => $property,
-                    'amenity_id' => $randomUniqueAmenity
-                ])
-                    ->count(1)->create();
+                    'amenity_id' => $item
+                ]);
             }
         }
 

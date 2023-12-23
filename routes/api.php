@@ -86,15 +86,17 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   //property type route  
   Route::post('/createPropertyType', [PropertyTypeController::class, 'create']);
   Route::post('/updatePropertyType', [PropertyTypeController::class, 'update']);
-  Route::post('deletePropertyType', [PropertyTypeController::class, 'delete']);
-  Route::post('filterByNamePropertyType', [PropertyTypeController::class, 'filterByName']);
+  Route::post('/deletePropertyType', [PropertyTypeController::class, 'delete']);
+  Route::post('/filterByNamePropertyType', [PropertyTypeController::class, 'filterByName']);
   Route::get('/readPropertyType/{page}', [PropertyTypeController::class, 'readCurrentPage']);
-  Route::get('filterByIdPropertyType', [PropertyTypeController::class, 'filterById']);
+  Route::get('/filterByIdPropertyType', [PropertyTypeController::class, 'filterById']);
 
   //chat 
-  Route::get('get-app-chat-user', [ChatController::class, 'getAllChatUser']);
-  Route::post('send-message-to-another', [ChatController::class, 'sendMessage']);
-  Route::get('get-message', [ChatController::class, 'getMessage']);
+  Route::post('sendMessage', [ChatController::class, 'sendMessage']);
+  Route::post('getMessage', [ChatController::class, 'getMessage']);
+  Route::post('sendMessage', [ChatController::class, 'sendMessage']);
+  Route::get('getMessage/', [ChatController::class, 'getMessage']);
+  Route::get('getAllUser', [ChatController::class, 'getAllUser']);
 
 
   //property route
@@ -117,6 +119,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('view-property-booking', [BookingController::class, 'getAllBookingOfProperty']);
   Route::post('deny-booking', [BookingController::class, 'denyBooking']);
   Route::post('accept-booking', [BookingController::class, 'acceptBooking']);
+  Route::get('get-all-bookings-of-host', [BookingController::class, 'getHostBookingOfHost']);
 
   // exception date route
   Route::post('add-exception-date', [PropertyExceptionDateController::class, 'create']);

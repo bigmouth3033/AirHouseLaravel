@@ -3,72 +3,98 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chat;
+use App\Models\Province;
 use App\Events\ChatEvent;
+use App\Events\NotificationEvent;
 use App\Models\ChatModel;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\DB;
 
 
 class ChatController extends Controller
 {
-    public function getAllChatUser(Request $request)
+    function sendMessage(Request $request)
     {
-        $user = $request->user();
+        $user_from_email = $request->user()->email;
+        $user_to_email = $request->user_to_email;
+        $message = $request->message;
 
-        DB::statement("SET SQL_MODE=''");
-        $results = DB::table('tp_messages')
-            ->join(DB::raw('(SELECT MAX(id) as id, chanel_name FROM tp_messages GROUP BY chanel_name) as new'), function ($join) {
-                $join->on('tp_messages.id', '=', 'new.id');
-            })
-            ->join('users as from_user', 'tp_messages.from_email', '=', 'from_user.email')
-            ->join('users as to_user', 'tp_messages.to_email', '=', 'to_user.email')
-            ->select('tp_messages.*', 'from_user.image as from_user_image', 'to_user.image as to_user_image')
-            ->where('from_email', $user->email)
-            ->orWhere('to_email', $user->email)
-            ->get();
-
-
-
-        foreach ($results as $result) {
-            if ($result->from_user_image) {
-                $result->from_user_image = asset('storage/images/users/' . $result->from_user_image);
-            }
-
-            if ($result->to_user_image) {
-                $result->to_user_image = asset('storage/images/users/' . $result->to_user_image);
-            }
-        }
-
-        return response($results);
-    }
-
-    public function sendMessage(Request $request)
-    {
-        $channel_name = [$request->user()->email, $request->email];
-        sort($channel_name);
-
-        $channel_name = join("-", $channel_name);
-
-        event(new ChatEvent($request->user()->email, $request->email, $request->message,  $channel_name));
+        event(new ChatEvent($user_from_email, $user_to_email, $message));
+        event(new NotificationEvent($user_from_email, $user_to_email, $message));
 
         $chat = new Chat();
-        $chat->from_email = $request->user()->email;
-        $chat->to_email = $request->email;
-        $chat->body  = $request->message;
-        $chat->chanel_name = $channel_name;
+        $chat->from_email = $user_from_email;
+        $chat->to_email = $user_to_email;
+        $chat->body = $message;
         $chat->save();
 
-        $channel = Chat::where('chanel_name', $channel_name)->get();
-
-        if (count($channel) == 1) {
-            event(new ChatEvent($request->email, $request->email, "new user",  $channel_name));
-        }
+        return response()->json([
+            '$user_from_email' => $user_from_email,
+            '$user_to_email' => $user_to_email,
+            'message' => $message
+        ]);
     }
 
-    public function getMessage(Request $request)
+    function getMessage(Request $request)
     {
-        $messages = Chat::where('chanel_name', $request->channel)->get();
+        $user = $request->user();
+        $user_from_email = $user->email;
+        $user_to_email = $request->user_to_email;
+        $emails = [$user_from_email, $user_to_email];
 
-        return response($messages);
+        $messages = DB::table('tp_messages')
+            ->where(function ($query) use ($emails) {
+                $query->whereIn('from_email', $emails)
+                    ->WhereIn('to_email', $emails);
+            })
+            ->get();
+        return $messages;
+    }
+
+    function getAllUser(Request $request)
+    {
+        $AllUser = [];
+
+        DB::statement("SET SQL_MODE=''");
+        $user = $request->user();
+        $fromEmail = $user->email;
+        $array1 = DB::table('tp_messages')
+            ->select('tp_messages.*')
+            ->where('from_email', $fromEmail)
+            ->orWhere('to_email', $fromEmail)
+            ->groupBy('from_email')
+            ->pluck('from_email');
+        $array2 = DB::table('tp_messages')
+            ->select('tp_messages.*')
+            ->where('from_email', $fromEmail)
+            ->orWhere('to_email', $fromEmail)
+            ->groupBy('to_email')
+            ->pluck('to_email');
+
+        foreach ($array1 as $key => $value) {
+            if (!in_array($value, $AllUser) && $value != $fromEmail) {
+                $AllUser[] = $value;
+            }
+        }
+        foreach ($array2 as $key => $value) {
+            if (!in_array($value, $AllUser) && $value != $fromEmail) {
+                $AllUser[] = $value;
+            }
+        }
+
+        $users = DB::table('users')
+            ->whereIn('email', $AllUser)
+            ->get();
+        return $users;
+    }
+    function test()
+    {
+        $rs = Province::pluck('code');
+        $code = fake()->randomElement($rs);
+        return response()->json([
+            '$rs' => $rs,
+            'code' => $code
+        ]);
     }
 }
