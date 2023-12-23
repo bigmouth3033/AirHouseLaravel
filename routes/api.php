@@ -91,12 +91,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('/readPropertyType/{page}', [PropertyTypeController::class, 'readCurrentPage']);
   Route::get('filterByIdPropertyType', [PropertyTypeController::class, 'filterById']);
 
-  // chat route
-  Route::post('sendMessage', [ChatController::class, 'sendMessage']);
-  Route::post('getMessage', [ChatController::class, 'getMessage']);
-  Route::post('sendMessage', [ChatController::class, 'sendMessage']);
-  Route::get('getMessage/', [ChatController::class, 'getMessage']);
-  Route::get('getAllUser', [ChatController::class, 'getAllUser']);
+  //chat 
+  Route::get('get-app-chat-user', [ChatController::class, 'getAllChatUser']);
+  Route::post('send-message-to-another', [ChatController::class, 'sendMessage']);
+  Route::get('get-message', [ChatController::class, 'getMessage']);
+
 
   //property route
   Route::post('/create-property', [PropertyController::class, 'create']);
@@ -108,6 +107,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('property/accept', [PropertyController::class, 'acceptProperty']);
   Route::post('property/deny', [PropertyController::class, 'denyProperty']);
   Route::get('read-property-to-update', [PropertyController::class, 'readPropertyToUpdate']);
+  Route::get('read-property-to-view-booking', [PropertyController::class, 'readProperty']);
 
   //booking route
   Route::post('user-booking', [BookingController::class, 'createBooking']);
@@ -115,6 +115,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('property-list', [PropertyController::class, 'listingProperty']);
   Route::get('readBooking', [BookingController::class, 'readBooking']);
   Route::get('view-property-booking', [BookingController::class, 'getAllBookingOfProperty']);
+  Route::post('deny-booking', [BookingController::class, 'denyBooking']);
+  Route::post('accept-booking', [BookingController::class, 'acceptBooking']);
 
   // exception date route
   Route::post('add-exception-date', [PropertyExceptionDateController::class, 'create']);
@@ -131,6 +133,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('deleteBlog/{id}', [BlogController::class, 'delete']);
   Route::get('readCurrentPage', [BlogController::class, 'readCurrentPage']);
   Route::post('/uploadImage', [BlogController::class, 'uploadImage']);
+
+  // blog cate route
   Route::post('createBlogCategory', [BlogCategoryController::class, 'create']);
   Route::post('updateBlogCategory', [BlogCategoryController::class, 'update']);
   Route::get('deleteBlogCategory/{id}', [BlogCategoryController::class, 'delete']);
@@ -138,10 +142,19 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
   Route::post('/createStart', [RatingController::class, 'createStart']);
   Route::get('/readStart', [RatingController::class, 'readStart']);
+
+
+  //rating
+  Route::post('/createStart', [RatingController::class, 'createStart']);
+  Route::get('/readStart', [RatingController::class, 'readStart']);
 });
 
-Route::get('/readAverageStart', [RatingController::class, 'readAverageStart']);
+Route::get('/verify/{email}', [UserController::class, 'verify'])->name('verify-email');
+
+//
 Route::get('/get-all-rating', [RatingController::class, 'readStartAll']);
+Route::get('/readAverageStart', [RatingController::class, 'readAverageStart']);
+
 
 //public route
 

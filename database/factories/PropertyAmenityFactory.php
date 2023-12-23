@@ -23,7 +23,6 @@ class PropertyAmenityFactory extends Factory
         $properties = Property::pluck('id');
         $amenities = Amenity::pluck('id');
 
-
         return [            //
             'property_id' => $this->faker->randomElement($properties),
             'amenity_id' => $this->faker->randomElement($amenities)

@@ -98,15 +98,16 @@ class PropertyController extends Controller
             }
         }
 
-        foreach ($exceptions as $exception) {
-            $newException = new PropertyExceptionDate();
-            $exception = json_decode($exception);
-            $newException->property_id = $Property->id;
-            $newException->start_date = $exception->start;
-            $newException->end_date = $exception->end;
-            $newException->save();
+        if ($exceptions) {
+            foreach ($exceptions as $exception) {
+                $newException = new PropertyExceptionDate();
+                $exception = json_decode($exception);
+                $newException->property_id = $Property->id;
+                $newException->start_date = $exception->start;
+                $newException->end_date = $exception->end;
+                $newException->save();
+            }
         }
-
 
         return response()->json([
             'success' => true,
@@ -177,7 +178,7 @@ class PropertyController extends Controller
         }
 
         $count = $collection->count();
-        $collection = $collection->get()->reverse()->chunk(20);
+        $collection = $collection->orderBy("updated_at")->get()->reverse()->chunk(20);
 
         $collection_length = count($collection);
         if ($collection_length < $page) {
@@ -194,7 +195,10 @@ class PropertyController extends Controller
 
         foreach ($collection as $property) {
             if ($property->user->image) {
-                $property->user->image = asset("storage/images/users/" . $property->user->image);
+                // $property->user->image = asset("storage/images/users/" . $property->user->image);
+                if (!filter_var($property->user->image, FILTER_VALIDATE_URL)) {
+                    $property->user->image = asset('storage/images/users/' . $property->user->image);
+                }
             }
         }
 
@@ -382,7 +386,7 @@ class PropertyController extends Controller
         $images = PropertyImage::where('property_id', $request->id)->get();
 
         foreach ($images as $image) {
-            Storage::delete('public/images/host/' . $image->image);
+            // Storage::delete('public/images/host/' . $image->image);
             $image->delete();
         }
 
@@ -560,6 +564,17 @@ class PropertyController extends Controller
             return response()->json([
                 "error" => "Not found property"
             ], 404);
+        }
+    }
+
+    public function readProperty(Request $request)
+    {
+        $property = Property::where('id', $request->id)->first();
+
+        if ($property) {
+            return response($property);
+        } else {
+            return response(['message' => 'not found'], 400);
         }
     }
 }

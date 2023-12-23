@@ -18,4 +18,6 @@ class User extends Model
     {
         return $this->hasMany(Property::class, 'id', 'user_id');
     }
+
+    
 }

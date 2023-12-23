@@ -83,17 +83,27 @@ class RatingController extends Controller
         $average = $total / $count;
         $result = number_format($average, 1, '.', '');
         return response()->json([
-            "average" => $result
+            "average" => $result,
+            "total" => $count
         ]);
     }
 
     public function readStartAll(Request $request)
     {
-        $start = Rating::with('user')->where('property_id', $request->property_id)->get();
-        if ($start) {
-            return response($start);
-        } else {
+        $page = $request->currentPage;
+        $perpage = 4 * $page;
+        $count = Rating::with('user')->where('property_id', $request->property_id)->count();
+        $ratings = Rating::with('user')->where('property_id', $request->property_id)->orderBy("updated_at", "desc")->paginate($perpage);
+        
+        if ($ratings) {
+            return response()->json([
+                "ratings" => $ratings,
+                "total" => $count
+            ]);
+        }else {
             return response("error", 404);
         }
     }
+    // abc
+    // fhjrfghu
 }

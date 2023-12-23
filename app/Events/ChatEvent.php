@@ -14,20 +14,22 @@ class ChatEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $user1;
-    public $user2;
+    public $from;
+    public $to;
     public $message;
+    public $channel;
 
-    public function __construct($user1, $user2, $message)
+    public function __construct($from, $to, $message, $channel)
     {
-        $this->user1 = $user1;
-        $this->user2 = $user2;
+        $this->from = $from;
+        $this->to = $to;
         $this->message = $message;
+        $this->channel = $channel;
     }
 
     public function broadcastOn()
     {
-        $name = [$this->user1, $this->user2];
+        $name = [$this->from, $this->to];
         sort($name);
 
         return [join("-", $name)];
