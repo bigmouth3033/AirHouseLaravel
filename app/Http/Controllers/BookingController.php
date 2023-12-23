@@ -16,76 +16,76 @@ class BookingController extends Controller
     //
     function createBooking(Request $request)
     {
+        $user = auth()->user();
+        if ($user) {
+            $now = today()->toDateString();
+            //exceptiondate
+            $listException = [];
+            $cntExcept = 0;
+            $exception_start = PropertyExceptionDate::where('property_id', $request->property_id)->where('start_date', '>=', $now)->pluck('start_date')->toArray();
+            $exception_end = PropertyExceptionDate::where('property_id', $request->property_id)->where('end_date', '>=', $now)->pluck('end_date')->toArray();
 
-        $now = today()->toDateString();
-        //exceptiondate
-        $listException = [];
-        $cntExcept = 0;
-        $exception_start = PropertyExceptionDate::where('property_id', $request->property_id)->where('start_date', '>=', $now)->pluck('start_date')->toArray();
-        $exception_end = PropertyExceptionDate::where('property_id', $request->property_id)->where('end_date', '>=', $now)->pluck('end_date')->toArray();
-
-        foreach ($exception_start as $bookingIn) {
-            $bookingIn = Carbon::parse($bookingIn);
-            $bookingOut = Carbon::parse($exception_end[$cntExcept]);
-            for ($date = $bookingIn; $date->lte($bookingOut); $date->addDay()) {
-                $listException[] = $date->toDateString();
+            foreach ($exception_start as $bookingIn) {
+                $bookingIn = Carbon::parse($bookingIn);
+                $bookingOut = Carbon::parse($exception_end[$cntExcept]);
+                for ($date = $bookingIn; $date->lte($bookingOut); $date->addDay()) {
+                    $listException[] = $date->toDateString();
+                }
+                $cntExcept++;
             }
-            $cntExcept++;
-        }
 
-        //list check_in_date
-        $booking_in = Booking::where('check_in_date', '>=', $now);
-        $booking_in = $booking_in->where('property_id',  $request->property_id)->where(function ($query) {
-            $query->where('booking_status', 'accepted')
-                ->orWhere('booking_status', 'success');
-        });
-        $booking_in = $booking_in->pluck('check_in_date')->toArray();
-        //list check_out_date
-        $booking_out = Booking::where('check_in_date', '>=', $now);
-        $booking_out = $booking_out->where('property_id', $request->property_id)->where(function ($query) {
-            $query->where('booking_status', 'accepted')
-                ->orWhere('booking_status', 'success');
-        });
-        $booking_out = $booking_out->pluck('check_out_date')->toArray();
-        $listBookedDate = [];
-        $cntBook = 0;
-        foreach ($booking_in as $bookingIn) {
-            $bookingIn = Carbon::parse($bookingIn);
-            $bookingOut = Carbon::parse($booking_out[$cntBook]);
-            for ($date = $bookingIn; $date->lte($bookingOut); $date->addDay()) {
-                $listBookedDate[] = $date->toDateString();
+            //list check_in_date
+            $booking_in = Booking::where('check_in_date', '>=', $now);
+            $booking_in = $booking_in->where('property_id',  $request->property_id)->where(function ($query) {
+                $query->where('booking_status', 'waiting')
+                    ->orWhere('booking_status', 'success');
+            });
+            $booking_in = $booking_in->pluck('check_in_date')->toArray();
+            //list check_out_date
+            $booking_out = Booking::where('check_in_date', '>=', $now);
+            $booking_out = $booking_out->where('property_id', $request->property_id)->where(function ($query) {
+                $query->where('booking_status', 'waiting')
+                    ->orWhere('booking_status', 'success');
+            });
+            $booking_out = $booking_out->pluck('check_out_date')->toArray();
+            $listBookedDate = [];
+            $cntBook = 0;
+            foreach ($booking_in as $bookingIn) {
+                $bookingIn = Carbon::parse($bookingIn);
+                $bookingOut = Carbon::parse($booking_out[$cntBook]);
+                for ($date = $bookingIn; $date->lte($bookingOut); $date->addDay()) {
+                    $listBookedDate[] = $date->toDateString();
+                }
+                $cntBook++;
             }
-            $cntBook++;
-        }
-        //Xu ly yeu cau cu client dang muon book
-        $checkInDate = Carbon::parse($request->check_in_date);
-        $checkOutDate = Carbon::parse($request->check_out_date);
-        // Tạo mảng chứa tất cả các ngày giữa check_in_date và check_out_date ma client dangv muon book
-        $datesInRange = [];
-        for ($date = $checkInDate; $date->lte($checkOutDate); $date->addDay()) {
-            $datesInRange[] = $date->toDateString();
-        }
-        // return response()->json([
-        //     "ex"=>$listException,
-        //     "book"=> $listBookedDate
-        // ]);
-        if (array_intersect($listBookedDate, $datesInRange) || array_intersect($listException, $datesInRange)) {
-            return response("error: maching date", 403);
+            //Xu ly yeu cau cu client dang muon book
+            $checkInDate = Carbon::parse($request->check_in_date);
+            $checkOutDate = Carbon::parse($request->check_out_date);
+            // Tạo mảng chứa tất cả các ngày giữa check_in_date và check_out_date ma client dangv muon book
+            $datesInRange = [];
+            for ($date = $checkInDate; $date->lte($checkOutDate); $date->addDay()) {
+                $datesInRange[] = $date->toDateString();
+            }
+            if (array_intersect($listBookedDate, $datesInRange) || array_intersect($listException, $datesInRange)) {
+                return response("error: maching date", 403);
+            } else {
+                $booking = new Booking();
+                $booking->property_id = $request->property_id;
+                $booking->user_id = $request->user()->id;
+                $booking->check_in_date = $request->check_in_date;
+                $booking->check_out_date = $request->check_out_date;
+                $booking->price_per_day = $request->base_price;
+                $booking->price_for_stay = $request->total;
+                $booking->site_fees = $request->site_fees;
+                $booking->booking_date = now()->toDateString();
+                $booking->total_person = $request->total_person;
+                $booking->booking_status = 'accepted';
+                $booking->save();
+
+                return response($booking, 200);
+            }
         } else {
-            $booking = new Booking();
-            $booking->property_id = $request->property_id;
-            $booking->user_id = $request->user()->id;
-            $booking->check_in_date = $request->check_in_date;
-            $booking->check_out_date = $request->check_out_date;
-            $booking->price_per_day = $request->base_price;
-            $booking->price_for_stay = $request->total;
-            $booking->site_fees = $request->site_fees;
-            $booking->booking_date = now()->toDateString();
-            $booking->total_person = $request->total_person;
-            $booking->booking_status = 'accepted';
-            $booking->save();
-
-            return response($booking, 200);
+            return response("error", 404);
         }
     }
 
@@ -121,21 +121,38 @@ class BookingController extends Controller
         $renter_id = $user->id;
 
         $booking = Booking::where("id", $request->booking_id)->first();
-        $booking = Booking::with('property')
-            ->where('id', $request->booking_id)
-            ->where('user_id', $renter_id)
-            ->first();
+        if ($booking) {
+            $booking = $booking->where("id", $request->booking_id)->where('booking_status', "accepted")->first();
+            if ($booking) {
+                $booking = Booking::with('property')
+                    ->where('id', $request->booking_id)
+                    ->where('user_id', $renter_id)
+                    ->first();
 
-        $propertyName = PropertyType::find($booking->property->property_type_id);
-        $userName = User::find($booking->property->user_id);
-        $renter = User::find($renter_id);
+                $propertyName = PropertyType::find($booking->property->property_type_id);
+                $userName = User::find($booking->property->user_id);
+                $renter = User::find($renter_id);
 
 
-        return response()->json([
-            'booking' => $booking,
-            'propertyType' => $propertyName->name,
-            'hostName' => $userName,
-            'renter' => $renter,
-        ]);
+                return response()->json([
+                    'booking' => $booking,
+                    'propertyType' => $propertyName->name,
+                    'hostName' => $userName,
+                    'renter' => $renter,
+                ]);
+            } else {
+                return response([
+                    'error' => 'Not Found',
+                    'status' => 404,
+                ], 404);
+                
+            };
+        } else {
+            return response([
+                'error' => 'Not Found',
+                'status' => 403,
+            ], 403);
+            
+        };
     }
 }

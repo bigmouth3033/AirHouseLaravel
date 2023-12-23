@@ -50,31 +50,32 @@ class TransactionController extends Controller
         $booking = Booking::where('id',  $booking_id)->first();
 
         if ($booking && $paymentid) {
-            $booking->booking_status = "success";
-            $booking->save();
+            if ($booking->booking_status == "accepted") {
+                $booking->booking_status = "success";
+                $booking->save();
 
-            //hosting_id
-            $property = Property::where('id', $booking->property_id)->first();
-            //create a new transaction object for the booking     
-            $transaction->payment_id = $paymentid;
-            $transaction->property_id = $booking->property_id;
-            $transaction->reciever_id  = $booking->user_id;
-            $transaction->payee_id  = $property->user_id;
-            $transaction->booking_id = $booking_id;
-            $transaction->amount = $booking->price_for_stay;
-            $transaction->host_fee = $booking->price_for_stay * 0.14;
-            $transaction->site_fees = $booking->site_fees;
-            $transaction->transfer_on = now()->toDateTimeString();
-            $transaction->save();
-            return response()->json([
-                'transaction' => $transaction,
-                'booking' => $booking
-            ]);
+                //hosting_id
+                $property = Property::where('id', $booking->property_id)->first();
+                //create a new transaction object for the booking     
+                $transaction->payment_id = $paymentid;
+                $transaction->property_id = $booking->property_id;
+                $transaction->reciever_id  = $booking->user_id;
+                $transaction->payee_id  = $property->user_id;
+                $transaction->booking_id = $booking_id;
+                $transaction->amount = $booking->price_for_stay;
+                $transaction->host_fee = $booking->price_for_stay * 0.14;
+                $transaction->site_fees = $booking->site_fees;
+                $transaction->transfer_on = now()->toDateTimeString();
+                $transaction->save();
+                return response()->json([
+                    'transaction' => $transaction,
+                    'booking' => $booking
+                ]);
+            } else {
+                return response("error", 403);
+            };
         } else {
-            return response()->json([
-                'booking_id' => $booking_id,
-                'payment_id' => $paymentid,
-            ]);
+            return response("error", 403);
         }
     }
     public function readSuccess(Request $request)
