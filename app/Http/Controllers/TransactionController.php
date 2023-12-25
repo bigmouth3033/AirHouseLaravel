@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Stripe\Stripe;
+use App\Models\Test;
 use App\Models\Booking;
 use App\Models\Property;
-use App\Models\Test;
+use Stripe\PaymentIntent;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
+use App\Mail\MailSuccessPayment;
+use Illuminate\Support\Facades\Mail;
 
 class TransactionController extends Controller
 {
@@ -40,6 +42,7 @@ class TransactionController extends Controller
     }
     public function success(Request $request)
     {
+        $user = auth()->user();
         $transaction = new Transaction;
 
         // $booking_status = $request->input("booking_status");
@@ -67,6 +70,7 @@ class TransactionController extends Controller
                 $transaction->site_fees = $booking->site_fees;
                 $transaction->transfer_on = now()->toDateTimeString();
                 $transaction->save();
+                Mail::to($user->email)->send(new MailSuccessPayment($user, $booking, $property));
                 return response()->json([
                     'transaction' => $transaction,
                     'booking' => $booking

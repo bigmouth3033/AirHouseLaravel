@@ -76,10 +76,12 @@ class RatingController extends Controller
         $listRating = Rating::where('property_id', $property_id)->get();
         $total = 0;
         $count = 0;
+        
         foreach ($listRating as $rating) {
             $total = $rating->start + $total;
             $count++;
         }
+
         $average = $total / $count;
         $result = number_format($average, 1, '.', '');
         return response()->json([

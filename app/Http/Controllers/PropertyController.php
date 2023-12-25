@@ -299,15 +299,66 @@ class PropertyController extends Controller
     public function showInIndex(Request $request)
     {
         $category = $request->category;
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('category_id', $category);
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images', 'rating', 'exception_date')->where('category_id', $category);
         $property = $property->where('acception_status', 'accept');
         $property = $property->where('property_status', 1);
 
+        if ($request->province != "none") {
+            $property = $property->where('provinces_id', $request->province);
+        }
+
+        if ($request->checkOutFilter) {
+            $checkInFilter = $request->checkInFilter;
+            $checkOutFilter = $request->checkOutFilter;
+            $property = $property->where('start_date', '<=', $request->checkInFilter)
+                ->where('end_date', '>=',  $request->checkOutFilter)
+                ->whereDoesntHave('booking', function ($query) use ($checkInFilter, $checkOutFilter) {
+                    $query->where(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('check_in_date', '<=', $checkInFilter)
+                            ->whereDate('check_out_date', '>=', $checkInFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('check_in_date', '<=', $checkOutFilter)
+                            ->whereDate('check_out_date', '>=', $checkOutFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('check_in_date', '>=', $checkInFilter)
+                            ->whereDate('check_out_date', '<=', $checkOutFilter);
+                    })->whereIn('booking_status', ['accepted', 'success']);
+                })
+                ->whereDoesntHave('exception_date', function ($query) use ($checkInFilter, $checkOutFilter) {
+                    $query->where(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('start_date', '<=', $checkInFilter)
+                            ->whereDate('end_date', '>=', $checkInFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('start_date', '<=', $checkOutFilter)
+                            ->whereDate('end_date', '>=', $checkOutFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('start_date', '>=', $checkInFilter)
+                            ->whereDate('end_date', '<=', $checkOutFilter);
+                    });
+                });
+        }
+
+        if ($request->guest_count) {
+            $property = $property->where('accomodates_count', '>=', $request->guest_count);
+        }
+
+
+
         $now = now()->toDateString();
 
-        // $property = $property->whereDate('end_date', '>=', $now);
-
         $property = $property->get();
+
+
+
+        // $total = 0;
+        // $count = 0;
+
+        // foreach ($listRating as $rating) {
+        //     $total = $rating->start + $total;
+        //     $count++;
+        // }
+
+        // $average = $total / $count;
 
         foreach ($property as $key => $value) {
             foreach ($property[$key]->images as $imgkey => $imgvalue) {
