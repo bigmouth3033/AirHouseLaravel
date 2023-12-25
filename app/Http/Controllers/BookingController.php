@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers;
 
+
+use App\Mail\MailCreateBooking;
 use App\Models\User;
 use App\Models\Booking;
+use App\Models\Property;
 use App\Models\PropertyType;
 use App\Models\PropertyExceptionDate;
 use Carbon\Carbon;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class BookingController extends Controller
 {
@@ -37,14 +41,14 @@ class BookingController extends Controller
             //list check_in_date
             $booking_in = Booking::where('check_in_date', '>=', $now);
             $booking_in = $booking_in->where('property_id',  $request->property_id)->where(function ($query) {
-                $query->where('booking_status', 'waiting')
+                $query->where('booking_status', 'accepted')
                     ->orWhere('booking_status', 'success');
             });
             $booking_in = $booking_in->pluck('check_in_date')->toArray();
             //list check_out_date
             $booking_out = Booking::where('check_in_date', '>=', $now);
             $booking_out = $booking_out->where('property_id', $request->property_id)->where(function ($query) {
-                $query->where('booking_status', 'waiting')
+                $query->where('booking_status', 'accepted')
                     ->orWhere('booking_status', 'success');
             });
             $booking_out = $booking_out->pluck('check_out_date')->toArray();
@@ -67,7 +71,12 @@ class BookingController extends Controller
                 $datesInRange[] = $date->toDateString();
             }
             if (array_intersect($listBookedDate, $datesInRange) || array_intersect($listException, $datesInRange)) {
-                return response("error: maching date", 403);
+                // return response("error: maching date", 403);
+                return response()->json([
+                    "listBook"=>$listBookedDate,
+                    "listException"=>$listException,
+                    "date"=>$datesInRange
+                ],403);
             } else {
                 $booking = new Booking();
                 $booking->property_id = $request->property_id;
@@ -79,9 +88,10 @@ class BookingController extends Controller
                 $booking->site_fees = $request->site_fees;
                 $booking->booking_date = now()->toDateString();
                 $booking->total_person = $request->total_person;
-                $booking->booking_status = 'accepted';
+                $booking->booking_status = 'waiting';
                 $booking->save();
-
+                $property = Property::where('id',$request->property_id)->first();
+                Mail::to($user->email)->send(new MailCreateBooking($user,$booking,$property));
                 return response($booking, 200);
             }
         } else {
@@ -89,6 +99,43 @@ class BookingController extends Controller
         }
     }
 
+    public function denyBooking(Request $request)
+    {
+
+        $booking = Booking::where('id', $request->booking_id)->first();
+        $booking->booking_status = 'denied';
+        $booking->save();
+        $user = User::find($booking->renter_id);
+        $property = Property::find($booking->property_id);
+        Mail::to($user->email)->send(new MailCreateBooking($user,$booking,$property));
+        return response($booking);
+    }
+
+    public function acceptBooking(Request $request)
+    {
+        $booking = Booking::where('id', $request->booking_id)->first();
+
+        $violateBooking = Booking::where('booking_status', 'waiting');
+
+        $violateBooking = $violateBooking->where(function ($query) use ($request, $booking) {
+            $query->whereDate('check_in_date', '>=', $booking->check_in_date)
+                ->whereDate('check_in_date', '<=', $booking->check_out_date)
+                ->orWhereDate('check_out_date', '>=', $booking->check_in_date)
+                ->whereDate('check_out_date', '<=', $booking->check_out_date);
+        });
+
+        $violateBooking = $violateBooking->get();
+
+        foreach ($violateBooking as $booking) {
+            $booking->booking_status = 'denied';
+            $booking->save();
+        }
+
+        $booking->booking_status = 'accepted';
+        $booking->save();
+
+        return response($booking);
+    }
 
     function getBookingByUser(Request $request)
     {
@@ -129,14 +176,14 @@ class BookingController extends Controller
                     ->where('user_id', $renter_id)
                     ->first();
 
-                $propertyName = PropertyType::find($booking->property->property_type_id);
+                $propertyTypeId= PropertyType::find($booking->property->property_type_id);
                 $userName = User::find($booking->property->user_id);
                 $renter = User::find($renter_id);
 
 
                 return response()->json([
                     'booking' => $booking,
-                    'propertyType' => $propertyName->name,
+                    'propertyType' => $propertyTypeId->name,
                     'hostName' => $userName,
                     'renter' => $renter,
                 ]);
@@ -154,5 +201,50 @@ class BookingController extends Controller
             ], 403);
             
         };
+    }
+    public function getHostBookingOfHost(Request $request)
+    {
+        $user = $request->user();
+
+        $properties_id = Property::select('id')->where('user_id', $user->id)->get();
+
+        $bookings = Booking::with('property.images', 'user')->whereIn('property_id', $properties_id);
+
+        if ($request->status != 'all') {
+            $bookings = $bookings->where('booking_status', $request->status);
+        }
+
+        $bookings = $bookings->paginate(10);
+
+        foreach ($bookings as $booking) {
+            foreach ($booking->property->images as $property_image) {
+                if (!filter_var($property_image->image, FILTER_VALIDATE_URL)) {
+                    $property_image->image = asset('storage/images/host/' . $property_image->image);
+                }
+            }
+
+            if (!filter_var($booking->user->image, FILTER_VALIDATE_URL)) {
+                $booking->user->image = asset('storage/images/users/' . $booking->user->image);
+            }
+        }
+
+
+
+        return response($bookings);
+    }
+    public function test(){
+        $now = now();
+        $bookings = Booking::where("booking_status","accepted")->get();
+        if($bookings){
+            foreach($bookings as $book){
+                $time  = $now->diffInHours($book->updated_at);
+                if($time<=24){
+                    $book->booking_status = "expired";
+                   $book->save();
+
+                }
+            }
+            return response()->json($bookings);
+        }
     }
 }

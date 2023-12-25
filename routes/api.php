@@ -106,7 +106,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('getBookingByUser', [BookingController::class, 'getBookingByUser']);
   Route::get('property-list', [PropertyController::class, 'listingProperty']);
   Route::get('read-property-to-update', [PropertyController::class, 'readPropertyToUpdate']);
+  Route::post('deny-booking', [BookingController::class, 'denyBooking']);
 
+  Route::post('accept-booking', [BookingController::class, 'acceptBooking']);
+  Route::get('get-all-bookings-of-host', [BookingController::class, 'getHostBookingOfHost']);
   Route::post('add-exception-date', [PropertyExceptionDateController::class, 'create']);
 
 
@@ -141,6 +144,8 @@ Route::get('/readAverageStart', [RatingController::class, 'readAverageStart']);
 // Route::get('/readCommentPage',[CommentController::class, 'readCommentPage']);
 
 //public route
+Route::get('test',[BookingController::class,'test']);
+
 
 Route::get('readBlogCategory', [BlogCategoryController::class, 'read']);
 Route::get('filterByIdBlogCategory', [BlogCategoryController::class, 'filterById']);

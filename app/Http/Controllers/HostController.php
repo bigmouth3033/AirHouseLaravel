@@ -209,7 +209,7 @@ class HostController extends Controller
         $property->acception_status = 'accept';
         $property->admin_message = $request->message;
         $property->save();
-
+        
         return response([
             'message' => 'accept property'
         ]);
