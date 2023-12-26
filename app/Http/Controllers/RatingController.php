@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Booking;
 use App\Models\Rating;
+
+use App\Models\Booking;
 use Illuminate\Http\Request;
 
 class RatingController extends Controller

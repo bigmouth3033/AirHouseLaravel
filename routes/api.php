@@ -110,6 +110,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('property/deny', [PropertyController::class, 'denyProperty']);
   Route::get('read-property-to-update', [PropertyController::class, 'readPropertyToUpdate']);
   Route::get('read-property-to-view-booking', [PropertyController::class, 'readProperty']);
+  Route::get('filter-preview', [PropertyController::class, 'showInIndexFilterPreview']);
 
   //booking route
   Route::post('user-booking', [BookingController::class, 'createBooking']);
