@@ -48,6 +48,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     return response(compact('user', 'token'));
   });
   Route::get('/user/{id}', [UserController::class, 'readById']);
+
+  //thêm
+  Route::get('user/profile/your-dashboard', [UserController::class, 'readForHostDashboard']);
   Route::post('/updateUser', [UserController::class, 'updateUser']);
   Route::post('/uploadImageUser', [UserController::class, 'uploadImage']);
   Route::post('/admin/signup', [UserController::class, 'signupAdmin']);
@@ -188,4 +191,6 @@ Route::post('/login', [UserController::class, 'login']);
 
 
 Route::post('google-signup', [UserController::class, 'signUpGoogle']);
-//
+//thêm
+Route::get('/profile/dashboard/{id}', [UserController::class, 'readById']);
+Route::get('/readStart', [RatingController::class, 'readStart']);

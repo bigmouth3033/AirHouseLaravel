@@ -76,8 +76,8 @@ class RatingController extends Controller
 
         $listRating = Rating::where('property_id', $property_id)->get();
         $total = 0;
-        $count = 0;
-        
+        $count = 1;
+
         foreach ($listRating as $rating) {
             $total = $rating->start + $total;
             $count++;
@@ -97,13 +97,13 @@ class RatingController extends Controller
         $perpage = 4 * $page;
         $count = Rating::with('user')->where('property_id', $request->property_id)->count();
         $ratings = Rating::with('user')->where('property_id', $request->property_id)->orderBy("updated_at", "desc")->paginate($perpage);
-        
+
         if ($ratings) {
             return response()->json([
                 "ratings" => $ratings,
                 "total" => $count
             ]);
-        }else {
+        } else {
             return response("error", 404);
         }
     }
