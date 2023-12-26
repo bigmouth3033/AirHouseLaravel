@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\LoginRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SignUpRequest;
+use App\Models\Property;
+use App\Models\Rating;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
@@ -68,12 +70,17 @@ class UserController extends Controller
         ]);
     }
 
+    //viêt đè
     public function readById($id)
     {
-        $user = User::find($id);
+        // $user = User::find($id);  của Tân
+        $user = User::with('ratings.property')->where('id',  $id)->first();
 
         if ($user) {
-            return response($user);
+            if ($user->image) {
+                $user->image = asset("storage/images/users/" . $user->image);
+            }
+            return response(['user' => $user]);
         }
 
         return response(['message' => 'not found']);
@@ -149,5 +156,23 @@ class UserController extends Controller
         }
 
         return response(['message' => 'cant do that'], 403);
+    }
+
+    public function readForHostDashboard()
+    {
+        $userID = auth()->user()->id;
+
+        $user = User::with('bookings', 'ratings')->where('id', $userID)->first();
+
+        $userBookedProperties = Property::where('user_id', $userID)->get();
+
+        if ($user) {
+            if ($user->image) {
+                $user->image = asset("storage/images/users/" . $user->image);
+            }
+            return response(['user' => $user, 'userBookedProp' => $userBookedProperties]);
+        }
+
+        return response(['user' => $user], 200);
     }
 }

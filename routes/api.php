@@ -22,6 +22,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\BlogCategoryController;
 use App\Http\Controllers\PropertyTypeController;
 use App\Http\Controllers\PropertyExceptionDateController;
+use App\Http\Controllers\RatingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   });
 
   Route::get('/user/{id}', [UserController::class, 'readById']);
+  //thêm
+  Route::get('/profile/your-dashboard', [UserController::class, 'readForHostDashboard']);
   Route::post('/updateUser', [UserController::class, 'updateUser']);
   Route::post('/uploadImageUser', [UserController::class, 'uploadImage']);
   Route::post('/admin/signup', [UserController::class, 'signupAdmin']);
@@ -99,7 +102,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('sendMessage', [ChatController::class, 'sendMessage']);
   Route::get('getMessage/', [ChatController::class, 'getMessage']);
   Route::get('getAllUser', [ChatController::class, 'getAllUser']);
-  
+
   Route::post('user-booking', [BookingController::class, 'createBooking']);
   Route::get('getBookingByUser', [BookingController::class, 'getBookingByUser']);
   Route::get('property-list', [PropertyController::class, 'listingProperty']);
@@ -152,4 +155,8 @@ Route::post('/login', [UserController::class, 'login']);
 
 
 Route::post('google-signup', [UserController::class, 'signUpGoogle']);
-//
+
+
+//thêm
+Route::get('/profile/dashboard/{id}', [UserController::class, 'readById']);
+Route::get('/readStart', [RatingController::class, 'readStart']);
