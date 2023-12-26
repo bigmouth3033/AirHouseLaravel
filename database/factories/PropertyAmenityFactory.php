@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Amenity;
 use App\Models\Property;
+use App\Models\PropertyAmenity;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +22,6 @@ class PropertyAmenityFactory extends Factory
     {
         $properties = Property::pluck('id');
         $amenities = Amenity::pluck('id');
-
 
         return [            //
             'property_id' => $this->faker->randomElement($properties),

@@ -98,15 +98,16 @@ class PropertyController extends Controller
             }
         }
 
-        foreach ($exceptions as $exception) {
-            $newException = new PropertyExceptionDate();
-            $exception = json_decode($exception);
-            $newException->property_id = $Property->id;
-            $newException->start_date = $exception->start;
-            $newException->end_date = $exception->end;
-            $newException->save();
+        if ($exceptions) {
+            foreach ($exceptions as $exception) {
+                $newException = new PropertyExceptionDate();
+                $exception = json_decode($exception);
+                $newException->property_id = $Property->id;
+                $newException->start_date = $exception->start;
+                $newException->end_date = $exception->end;
+                $newException->save();
+            }
         }
-
 
         return response()->json([
             'success' => true,
@@ -177,7 +178,7 @@ class PropertyController extends Controller
         }
 
         $count = $collection->count();
-        $collection = $collection->get()->reverse()->chunk(20);
+        $collection = $collection->orderBy("updated_at")->get()->reverse()->chunk(20);
 
         $collection_length = count($collection);
         if ($collection_length < $page) {
@@ -194,7 +195,10 @@ class PropertyController extends Controller
 
         foreach ($collection as $property) {
             if ($property->user->image) {
-                $property->user->image = asset("storage/images/users/" . $property->user->image);
+                // $property->user->image = asset("storage/images/users/" . $property->user->image);
+                if (!filter_var($property->user->image, FILTER_VALIDATE_URL)) {
+                    $property->user->image = asset('storage/images/users/' . $property->user->image);
+                }
             }
         }
 
@@ -292,16 +296,210 @@ class PropertyController extends Controller
         }
     }
 
-    public function showInIndex(Request $request)
+
+    public function showInIndexFilterPreview(Request $request)
     {
         $category = $request->category;
-        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images')->where('category_id', $category);
+        $property = Property::where('category_id', $category);
         $property = $property->where('acception_status', 'accept');
         $property = $property->where('property_status', 1);
 
         $now = now()->toDateString();
 
-        // $property = $property->whereDate('end_date', '>=', $now);
+        $property = $property->whereDate('end_date', '>=', $now);
+
+        $tempCollections = $property->get();
+        $totalMax = $tempCollections[0]->base_price;
+
+        foreach ($tempCollections as $item) {
+            if ($item->base_price > $totalMax) {
+                $totalMax = $item->base_price;
+            }
+        }
+
+
+
+        if ($request->province != "none") {
+            $property = $property->where('provinces_id', $request->province);
+        }
+
+        if ($request->checkOutFilter) {
+            $checkInFilter = $request->checkInFilter;
+            $checkOutFilter = $request->checkOutFilter;
+            $property = $property->where('start_date', '<=', $request->checkInFilter)
+                ->where('end_date', '>=',  $request->checkOutFilter)
+                ->whereDoesntHave('booking', function ($query) use ($checkInFilter, $checkOutFilter) {
+                    $query->where(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('check_in_date', '<=', $checkInFilter)
+                            ->whereDate('check_out_date', '>=', $checkInFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('check_in_date', '<=', $checkOutFilter)
+                            ->whereDate('check_out_date', '>=', $checkOutFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('check_in_date', '>=', $checkInFilter)
+                            ->whereDate('check_out_date', '<=', $checkOutFilter);
+                    })->whereIn('booking_status', ['accepted', 'success']);
+                })
+                ->whereDoesntHave('exception_date', function ($query) use ($checkInFilter, $checkOutFilter) {
+                    $query->where(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('start_date', '<=', $checkInFilter)
+                            ->whereDate('end_date', '>=', $checkInFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('start_date', '<=', $checkOutFilter)
+                            ->whereDate('end_date', '>=', $checkOutFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('start_date', '>=', $checkInFilter)
+                            ->whereDate('end_date', '<=', $checkOutFilter);
+                    });
+                });
+        }
+
+        if ($request->guest_count) {
+            $property = $property->where('accomodates_count', '>=', $request->guest_count);
+        }
+
+        if ($request->roomType != 'any') {
+            $property = $property->where('room_type_id', $request->roomType);
+        }
+
+        if ($request->bedRoom != 'any') {
+
+            if ($request->bedRoom == '8+') {
+                $property = $property->where('bedroom_count', '>=', 8);
+            } else {
+                $property = $property->where('bedroom_count', '>=', $request->bedRoom);
+            }
+        }
+
+        if ($request->bathRoom != 'any') {
+            if ($request->bathRoom == '8+') {
+                $property = $property->where('bathroom_count', '>=', 8);
+            } else {
+                $property = $property->where('bathroom_count', '>=', $request->bathRoom);
+            }
+        }
+
+        if ($request->propertyType != 'any') {
+            $property = $property->where('property_type_id', $request->propertyType);
+        }
+
+        if ($request->amenities) {
+            $amenities = $request->amenities;
+
+            $property = $property->whereHas('amenities', function ($query) use ($amenities) {
+                $query->whereIn('amenity_id',  $amenities)->groupBy('property_id')->havingRaw('count(amenity_id) >= ?', [count($amenities)]);
+            });
+        }
+
+        $property = $property->get();
+
+        $minPrice = $property[0]->base_price;
+        $maxPrice = $property[0]->base_price;
+
+
+
+        foreach ($property as $item) {
+            if ($item->base_price > $maxPrice) {
+                $maxPrice = $item->base_price;
+            }
+
+            if ($item->base_price < $minPrice) {
+                $minPrice = $item->base_price;
+            }
+        }
+
+        return response([
+            'min' => $minPrice,
+            'max' => $maxPrice,
+            'totalMax' => $totalMax,
+            'total' => count($property)
+        ]);
+    }
+
+    public function showInIndex(Request $request)
+    {
+        $category = $request->category;
+        $property = Property::with('user', 'category', 'property_type', 'room_type', 'district', 'province', 'amenities', 'images', 'rating', 'exception_date')->where('category_id', $category);
+        $property = $property->where('acception_status', 'accept');
+        $property = $property->where('property_status', 1);
+
+        $now = now()->toDateString();
+
+        $property = $property->whereDate('end_date', '>=', $now);
+
+        if ($request->province != "none") {
+            $property = $property->where('provinces_id', $request->province);
+        }
+
+        if ($request->checkOutFilter) {
+            $checkInFilter = $request->checkInFilter;
+            $checkOutFilter = $request->checkOutFilter;
+            $property = $property->where('start_date', '<=', $request->checkInFilter)
+                ->where('end_date', '>=',  $request->checkOutFilter)
+                ->whereDoesntHave('booking', function ($query) use ($checkInFilter, $checkOutFilter) {
+                    $query->where(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('check_in_date', '<=', $checkInFilter)
+                            ->whereDate('check_out_date', '>=', $checkInFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('check_in_date', '<=', $checkOutFilter)
+                            ->whereDate('check_out_date', '>=', $checkOutFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('check_in_date', '>=', $checkInFilter)
+                            ->whereDate('check_out_date', '<=', $checkOutFilter);
+                    })->whereIn('booking_status', ['accepted', 'success']);
+                })
+                ->whereDoesntHave('exception_date', function ($query) use ($checkInFilter, $checkOutFilter) {
+                    $query->where(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('start_date', '<=', $checkInFilter)
+                            ->whereDate('end_date', '>=', $checkInFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('start_date', '<=', $checkOutFilter)
+                            ->whereDate('end_date', '>=', $checkOutFilter);
+                    })->orWhere(function ($subQuery) use ($checkInFilter, $checkOutFilter) {
+                        $subQuery->whereDate('start_date', '>=', $checkInFilter)
+                            ->whereDate('end_date', '<=', $checkOutFilter);
+                    });
+                });
+        }
+
+        if ($request->guest_count) {
+            $property = $property->where('accomodates_count', '>=', $request->guest_count);
+        }
+
+
+        if ($request->roomType != 'any') {
+            $property = $property->where('room_type_id', $request->roomType);
+        }
+
+        if ($request->bedRoom != 'any') {
+
+            if ($request->bedRoom == '8+') {
+                $property = $property->where('bedroom_count', '>=', 8);
+            } else {
+                $property = $property->where('bedroom_count', '>=', $request->bedRoom);
+            }
+        }
+
+        if ($request->bathRoom != 'any') {
+            if ($request->bathRoom == '8+') {
+                $property = $property->where('bathroom_count', '>=', 8);
+            } else {
+                $property = $property->where('bathroom_count', '>=', $request->bathRoom);
+            }
+        }
+
+        if ($request->propertyType != 'any') {
+            $property = $property->where('property_type_id', $request->propertyType);
+        }
+
+        if ($request->amenities) {
+            $amenities = $request->amenities;
+
+            $property = $property->whereHas('amenities', function ($query) use ($amenities) {
+                $query->whereIn('amenity_id',  $amenities)->groupBy('property_id')->havingRaw('count(amenity_id) >= ?', [count($amenities)]);
+            });
+        }
+
 
         $property = $property->get();
 
@@ -382,7 +580,7 @@ class PropertyController extends Controller
         $images = PropertyImage::where('property_id', $request->id)->get();
 
         foreach ($images as $image) {
-            Storage::delete('public/images/host/' . $image->image);
+            // Storage::delete('public/images/host/' . $image->image);
             $image->delete();
         }
 
@@ -560,6 +758,17 @@ class PropertyController extends Controller
             return response()->json([
                 "error" => "Not found property"
             ], 404);
+        }
+    }
+
+    public function readProperty(Request $request)
+    {
+        $property = Property::where('id', $request->id)->first();
+
+        if ($property) {
+            return response($property);
+        } else {
+            return response(['message' => 'not found'], 400);
         }
     }
 }

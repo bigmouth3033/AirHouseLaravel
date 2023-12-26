@@ -2,12 +2,14 @@
 
 namespace App\Mail;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Envelope;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
 class EmailVerify extends Mailable
 {
@@ -16,9 +18,11 @@ class EmailVerify extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public $url;
+    public function __construct(public User $user)
     {
-        //
+        $GENARATE =   URL::temporarySignedRoute('verify-email', now()->addMinutes(20), ['email' => $user->email]);
+        $this->url = $GENARATE;
     }
 
     /**
@@ -37,7 +41,7 @@ class EmailVerify extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'email',
         );
     }
 

@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\LoginRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SignUpRequest;
+use App\Mail\EmailVerify;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 
@@ -25,6 +27,8 @@ class UserController extends Controller
         $user->first_name = $request->first_name;
         $user->last_name  = $request->last_name;
         $user->save();
+
+        Mail::to($user->email)->send(new EmailVerify($user));
 
         $token = $user->createToken('myToken')->plainTextToken;
         return response(compact('user', 'token'));
@@ -149,5 +153,17 @@ class UserController extends Controller
         }
 
         return response(['message' => 'cant do that'], 403);
+    }
+
+    public function verify($email)
+    {
+        $user = User::where('email', $email)->first();
+        if ($user) {
+            $user->email_verified_at = now();
+            $user->save();
+            return response()->json([
+                'message' => "ok"
+            ]);
+        }
     }
 }

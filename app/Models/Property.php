@@ -71,4 +71,9 @@ class Property extends Model
     {
         return $this->hasMany(PropertyExceptionDate::class, 'property_id', 'id');
     }
+
+    public function rating(): HasMany
+    {
+        return $this->hasMany(Rating::class, 'property_id', 'id');
+    }
 }

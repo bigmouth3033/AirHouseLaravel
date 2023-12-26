@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Stripe\Stripe;
+use App\Models\Test;
 use App\Models\Booking;
 use App\Models\Property;
-use App\Models\Test;
+use Stripe\PaymentIntent;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
+use App\Mail\MailSuccessPayment;
+use Illuminate\Support\Facades\Mail;
 
 class TransactionController extends Controller
 {
@@ -40,6 +42,7 @@ class TransactionController extends Controller
     }
     public function success(Request $request)
     {
+        $user = auth()->user();
         $transaction = new Transaction;
 
         // $booking_status = $request->input("booking_status");
@@ -48,31 +51,35 @@ class TransactionController extends Controller
 
         //Update booking information for booking
         $booking = Booking::where('id',  $booking_id)->first();
-        if ($booking && $paymentid) {
-            $booking->booking_status = "success";
-            $booking->save();
 
-            //hosting_id
-            $property = Property::where('id', $booking->property_id)->first();
-            //create a new transaction object for the booking     
-            $transaction->payment_id = $paymentid;
-            $transaction->property_id = $booking->property_id;
-            $transaction->reciever_id  = $booking->user_id;
-            $transaction->payee_id  = $property->user_id;
-            $transaction->booking_id = $booking_id;
-            $transaction->site_fees = $booking->site_fees;
-            $transaction->amout = $booking->price_for_stay;
-            $transaction->transfer_on = now()->toDateTimeString();
-            $transaction->save();
-            return response()->json([
-                'transaction' => $transaction,
-                'booking' => $booking
-            ]);
+        if ($booking && $paymentid) {
+            if ($booking->booking_status == "accepted") {
+                $booking->booking_status = "success";
+                $booking->save();
+
+                //hosting_id
+                $property = Property::where('id', $booking->property_id)->first();
+                //create a new transaction object for the booking     
+                $transaction->payment_id = $paymentid;
+                $transaction->property_id = $booking->property_id;
+                $transaction->reciever_id  = $booking->user_id;
+                $transaction->payee_id  = $property->user_id;
+                $transaction->booking_id = $booking_id;
+                $transaction->amount = $booking->price_for_stay;
+                $transaction->host_fee = $booking->price_for_stay * 0.14;
+                $transaction->site_fees = $booking->site_fees;
+                $transaction->transfer_on = now()->toDateTimeString();
+                $transaction->save();
+                Mail::to($user->email)->send(new MailSuccessPayment($user, $booking, $property));
+                return response()->json([
+                    'transaction' => $transaction,
+                    'booking' => $booking
+                ]);
+            } else {
+                return response("error", 403);
+            };
         } else {
-            return response()->json([
-                'booking_id' => $booking_id,
-                'payment_id' => $paymentid,
-            ]);
+            return response("error", 403);
         }
     }
     public function readSuccess(Request $request)
