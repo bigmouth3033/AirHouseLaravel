@@ -21,14 +21,13 @@ class TransactionController extends Controller
         // Tạo một PaymentIntent trên máy chủ
         $user = auth()->user();
         $renter_id = $user->id;
-
         $booking = Booking::where('id', $request->booking_id);
         $booking = $booking->where('user_id', $renter_id);
         $booking = $booking->where('booking_status', "accepted")->first();
-
         if ($booking) {
+            $amount = $request->amount;
             $paymentIntent = PaymentIntent::create([
-                'amount' => $request->amount,
+                'amount' => $amount*100,
                 'currency' => 'usd',
             ]);
             return response()->json(
@@ -65,7 +64,7 @@ class TransactionController extends Controller
                 $transaction->reciever_id  = $booking->user_id;
                 $transaction->payee_id  = $property->user_id;
                 $transaction->booking_id = $booking_id;
-                $transaction->amount = $booking->price_for_stay;
+                $transaction->amount = $booking->price_for_stay + $booking->site_fees;
                 $transaction->host_fee = $booking->price_for_stay * 0.14;
                 $transaction->site_fees = $booking->site_fees;
                 $transaction->transfer_on = now()->toDateTimeString();
