@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Property;
 use App\Models\PropertyType;
 use Illuminate\Http\Request;
 use Ramsey\Uuid\Uuid;
@@ -97,6 +98,12 @@ class PropertyTypeController extends Controller
         $id = $request->input("id");
         $propertyType = PropertyType::find($id);
         if ($propertyType) {
+            $property = Property::where('property_type_id', $propertyType->id)->first();
+
+            if ($property) {
+                return response(['message' => 'error'], 403);
+            }
+
             unlink(storage_path('app/public/images/property_type/' . $propertyType->icon_image));
             $propertyType->delete();
             return response()->json([

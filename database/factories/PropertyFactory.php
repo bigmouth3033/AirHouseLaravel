@@ -115,7 +115,16 @@ class PropertyFactory extends Factory
 
         $check_in_after = $this->faker->randomElement($checkInArr);
         $check_out_before = $this->faker->randomElement($checkOutArr);
-        $video = $this->faker->url();
+
+        $videos = [
+            'https://www.youtube.com/watch?v=PJNLXF7N4oo',
+            'https://www.youtube.com/watch?v=i03sTpUFJ2k',
+            'https://www.youtube.com/watch?v=T8kTDdMFR_M',
+            'https://www.youtube.com/watch?v=6_2Sff2_Re4'
+        ];
+
+
+        $video = $this->faker->randomElement($videos);
         $property_status = 1;
         $acception_status_array = ['accept', 'deny', 'waiting'];
         $acception_status = $this->faker->randomElement($acception_status_array);

@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use Ramsey\Uuid\Uuid;
+use App\Models\Booking;
+use App\Models\Property;
+use App\Mail\EmailVerify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\LoginRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SignUpRequest;
-use App\Mail\EmailVerify;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -34,19 +36,6 @@ class UserController extends Controller
         return response(compact('user', 'token'));
     }
 
-    public function signupAdmin(Request $request)
-    {
-        $user = new User();
-        $user->email = $request->email;
-        $user->password = bcrypt($request->password);
-        $user->date_of_birth = "1999-01-01";
-        $user->first_name = "admin";
-        $user->last_name  = "admin";
-        $user->user_type = 0;
-        $user->save();
-
-        return response(compact('user'));
-    }
 
     public function login(Request $request)
     {
@@ -74,10 +63,13 @@ class UserController extends Controller
 
     public function readById($id)
     {
-        $user = User::find($id);
+        $user = User::with('ratings.property')->where('id',  $id)->first();
 
         if ($user) {
-            return response($user);
+            if ($user->image) {
+                $user->image = asset("storage/images/users/" . $user->image);
+            }
+            return response(['user' => $user]);
         }
 
         return response(['message' => 'not found']);
@@ -164,6 +156,60 @@ class UserController extends Controller
             return response()->json([
                 'message' => "ok"
             ]);
+        }
+    }
+
+    public function registerAdmin(Request $request)
+    {
+        $user = new User();
+        $user->email = $request->email;
+        $user->password = bcrypt($request->password);
+        $user->date_of_birth = '1997-06-19';
+        $user->first_name = 'admin';
+        $user->last_name  = 'admin';
+        $user->user_type = 0;
+        $user->save();
+
+        return response($user);
+    }
+
+    public function loginAdmin(Request $request)
+    {
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response([
+                'message' => 'wrong account or password'
+            ], 401);
+        }
+
+        if ($user->user_type == 1) {
+            return response([
+                'message' => 'forbiden'
+            ], 403);
+        }
+
+        $token = $user->createToken('myToken')->plainTextToken;
+        return response(compact('user', 'token'));
+    }
+
+    public function readForHostDashboard()
+    {
+        $userID = auth()->user()->id;
+
+        $user = User::with('bookings', 'ratings.property')->where('id', $userID)->first();
+
+        // Lấy danh sách các Prop thuộc sở hữu của user đó
+        $userOwnedProperties = Property::where('user_id', $userID)->pluck('id');
+
+        // Tính tổng số booking thuộc về user từ các khách khác
+        $countBookingFromOthers = Booking::whereIn('property_id', $userOwnedProperties)->count();
+
+        if ($user) {
+            if ($user->image) {
+                $user->image = asset("storage/images/users/" . $user->image);
+            }
+            return response(['user' => $user, 'bookFromOthers' => $countBookingFromOthers]);
         }
     }
 }

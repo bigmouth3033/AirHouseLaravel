@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Stripe\Stripe;
 use App\Models\Test;
 use App\Models\Booking;
 use App\Models\Property;
 use Stripe\PaymentIntent;
 use App\Models\Transaction;
+
 use Illuminate\Http\Request;
 use App\Mail\MailSuccessPayment;
 use Illuminate\Support\Facades\Mail;
@@ -21,14 +23,13 @@ class TransactionController extends Controller
         // Tạo một PaymentIntent trên máy chủ
         $user = auth()->user();
         $renter_id = $user->id;
-
         $booking = Booking::where('id', $request->booking_id);
         $booking = $booking->where('user_id', $renter_id);
         $booking = $booking->where('booking_status', "accepted")->first();
-
         if ($booking) {
+            $amount = $request->amount;
             $paymentIntent = PaymentIntent::create([
-                'amount' => $request->amount,
+                'amount' => $amount * 100,
                 'currency' => 'usd',
             ]);
             return response()->json(
@@ -40,6 +41,7 @@ class TransactionController extends Controller
             );
         }
     }
+    
     public function success(Request $request)
     {
         $user = auth()->user();
@@ -86,6 +88,58 @@ class TransactionController extends Controller
     {
         $id = $request->input('payment_intent');
         $transaction = Transaction::where('payment_id', $id)->first();
+        return response($transaction);
+    }
+
+
+    public function getTransaction(Request $request)
+    {
+        $transaction = Transaction::paginate(10);
+
+        return response($transaction);
+    }
+
+    public function getTotalTransactionCount(Request $request)
+    {
+        if ($request->year) {
+            $transaction = Transaction::selectRaw('MONTH(transfer_on) as month, count(*) as total')->whereRaw('year(transfer_on) = ?', $request->year)->groupBy('month')->get();
+            return response([
+                'report' => $transaction,
+                'type' => 'year'
+            ]);
+        } else {
+            $transaction = Transaction::selectRaw('year(transfer_on) as year, count(*) as total')->groupBy('year')->get();
+            return response([
+                'report' => $transaction,
+                'type' => 'total'
+            ]);
+        }
+    }
+
+    public function getTotalFeeTransaction(Request $request)
+    {
+        if ($request->year) {
+            $transaction = Transaction::selectRaw('MONTH(transfer_on) as month, sum(site_fees + host_fee) as total')->whereRaw('year(transfer_on) = ?', $request->year)->groupBy('month')->get();
+            return response([
+                'report' => $transaction,
+                'type' => 'year'
+            ]);
+        } else {
+            $transaction = Transaction::selectRaw('year(transfer_on) as year, sum(site_fees + host_fee) as total')->groupBy('year')->get();
+            return response([
+                'report' => $transaction,
+                'type' => 'total'
+            ]);
+        }
+    }
+
+    public function getTodayTransaction(Request $request)
+    {
+        $transaction = Transaction::selectRaw('HOUR(transfer_on) as hour, sum(site_fees + host_fee) as fees, count(*) as count')
+            ->whereDate('transfer_on', Carbon::today())
+            ->groupBy('hour')
+            ->get();
+
         return response($transaction);
     }
 }

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Ramsey\Uuid\Uuid;
 use App\Models\Category;
+use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Ramsey\Uuid\Uuid;
 
 class CategoryController extends Controller
 {
@@ -82,6 +83,13 @@ class CategoryController extends Controller
         $id = $request->input("id");
         $Category = Category::find($id);
         if ($Category) {
+            $property = Property::where('category_id', $Category->id)->first();
+
+            if ($property) {
+                return response(['message' => 'error'], 403);
+            }
+
+
             unlink(storage_path('app/public/images/category/' . $Category->icon_image));
             $Category->delete();
             return response()->json([

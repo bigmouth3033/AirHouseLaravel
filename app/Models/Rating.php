@@ -15,4 +15,9 @@ class Rating extends Model
     {
         return $this->belongsTo(User::class, 'renter_id', 'id');
     }
+    
+    public function property(): BelongsTo
+    {
+        return $this->belongsTo(Property::class, 'property_id', 'id');
+    }
 }

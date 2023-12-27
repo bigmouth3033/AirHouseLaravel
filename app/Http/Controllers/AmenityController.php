@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Ramsey\Uuid\Uuid;
 use App\Models\Amenity;
+use App\Models\PropertyAmenity;
 use Faker\Core\File;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Collection;
@@ -110,6 +111,12 @@ class AmenityController extends Controller
         $amenities = Amenity::find($id);
 
         if ($amenities) {
+            $property_amenities = PropertyAmenity::where('amenity_id', $amenities->id)->first();
+
+            if ($property_amenities) {
+                return response(['message' => 'error'], 403);
+            }
+
             unlink(storage_path('app/public/images/amenities/' . $amenities->icon_image));
             $amenities->delete();
             return response()->json([

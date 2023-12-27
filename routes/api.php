@@ -50,8 +50,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('/user/{id}', [UserController::class, 'readById']);
   Route::post('/updateUser', [UserController::class, 'updateUser']);
   Route::post('/uploadImageUser', [UserController::class, 'uploadImage']);
-  Route::post('/admin/signup', [UserController::class, 'signupAdmin']);
+  Route::post('/admin/signup', [UserController::class, 'registerAdmin']);
   Route::post('/logout', [UserController::class, 'logout']);
+  Route::get('user/profile/your-dashboard', [UserController::class, 'readForHostDashboard']);
+
 
   // amenities route
   Route::post('/createAmenity', [AmenityController::class, 'create']);
@@ -110,7 +112,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::post('property/deny', [PropertyController::class, 'denyProperty']);
   Route::get('read-property-to-update', [PropertyController::class, 'readPropertyToUpdate']);
   Route::get('read-property-to-view-booking', [PropertyController::class, 'readProperty']);
-  Route::get('filter-preview', [PropertyController::class, 'showInIndexFilterPreview']);
+
 
   //booking route
   Route::post('user-booking', [BookingController::class, 'createBooking']);
@@ -144,14 +146,19 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
   Route::get('deleteBlogCategory/{id}', [BlogCategoryController::class, 'delete']);
   Route::get('readCateCurrentPage', [BlogCategoryController::class, 'readCurrentPage']);
 
-  Route::post('/createStart', [RatingController::class, 'createStart']);
-  Route::get('/readStart', [RatingController::class, 'readStart']);
-
 
   //rating
   Route::post('/createStart', [RatingController::class, 'createStart']);
-  Route::get('/readStart', [RatingController::class, 'readStart']);
+
+
+
+
+  Route::get('/get-transaction-count-report', [TransactionController::class, 'getTotalTransactionCount']);
+  Route::get('/get-fee-transaction', [TransactionController::class, 'getTotalFeeTransaction']);
+  Route::get('/get-to-day-transaction', [TransactionController::class, 'getTodayTransaction']);
 });
+
+Route::get('login-admin', [UserController::class, 'loginAdmin']);
 
 Route::get('/verify/{email}', [UserController::class, 'verify'])->name('verify-email');
 
@@ -188,4 +195,8 @@ Route::post('/login', [UserController::class, 'login']);
 
 
 Route::post('google-signup', [UserController::class, 'signUpGoogle']);
+Route::get('filter-preview', [PropertyController::class, 'showInIndexFilterPreview']);
+
+Route::get('/readStart', [RatingController::class, 'readStart']);
+Route::get('/profile/dashboard/{id}', [UserController::class, 'readById']);
 //

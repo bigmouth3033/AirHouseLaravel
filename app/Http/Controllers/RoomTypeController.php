@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Property;
 use App\Models\RoomType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -75,6 +76,13 @@ class RoomTypeController extends Controller
         $roomType = RoomType::find($id);
 
         if ($roomType) {
+            $property = Property::where('room_type_id', $roomType->id)->first();
+
+            if ($property) {
+                return response(['message' => 'error'], 403);
+            }
+
+
             unlink(storage_path('app/public/images/room_images/' . $roomType->icon_image));
             $roomType->delete();
             return response()->json([

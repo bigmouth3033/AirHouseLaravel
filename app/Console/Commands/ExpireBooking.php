@@ -6,7 +6,7 @@ use App\Models\Booking;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
-class ExpireBookings extends Command
+class ExpireBooking extends Command
 {
     /**
      * The name and signature of the console command.
@@ -32,7 +32,7 @@ class ExpireBookings extends Command
         if ($bookings) {
             foreach ($bookings as $book) {
                 $time  = $now->diffInHours($book->updated_at);
-                if ($time <= 24) {
+                if ($time >= 24) {
                     $book->booking_status = "expired";
                     $book->save();
                 }

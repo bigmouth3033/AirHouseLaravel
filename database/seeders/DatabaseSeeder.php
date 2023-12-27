@@ -6,6 +6,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Amenity;
 use App\Models\Property;
+use App\Models\Transaction;
 use Illuminate\Support\Arr;
 use App\Models\PropertyImage;
 use App\Models\PropertyAmenity;
@@ -26,13 +27,14 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        // Property::factory()->count(2)->create();
+        // Property::factory()->count(3000)->create();
 
         // $properties = Property::pluck('id');
+
         // foreach ($properties as $property) {
         //     $property_images = PropertyImage::where('property_id', $property)->first();
         //     if (!$property_images) {
-        //         for ($i = 0; $i < 5; $i++) {
+        //         for ($i = 0; $i < 10; $i++) {
         //             PropertyImage::factory()->state([
         //                 'property_id' => $property
         //             ])->create();
@@ -59,7 +61,7 @@ class DatabaseSeeder extends Seeder
             foreach ($amenites as $amenity) {
                 $amenites_array[] = $amenity;
             }
-            $randomAmenites = array_unique(Arr::random($amenites_array, fake()->numberBetween(5, 10)));
+            $randomAmenites = array_unique(Arr::random($amenites_array, fake()->numberBetween(10, 20)));
             foreach ($randomAmenites as $item) {
                 DB::table('property_amenities')->insert([
                     'property_id' => $property,
@@ -79,5 +81,12 @@ class DatabaseSeeder extends Seeder
 
         ///////////////////////////////////////////////////////////////////////////
 
+
+        // for ($i = 0; $i < 3000000; $i++) {
+        //     //SELECT * FROM `transactions` WHERE `payment_id` LIKE 'PM%'
+        //     Transaction::factory()->state([
+        //         'payment_id' => "PM$i"
+        //     ])->count(1)->create();
+        // }
     }
 }
