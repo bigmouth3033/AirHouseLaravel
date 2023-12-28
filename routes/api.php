@@ -167,7 +167,7 @@ Route::get('/readAverageStart', [RatingController::class, 'readAverageStart']);
 
 // public blog category route
 Route::get('readBlogCategory', [BlogCategoryController::class, 'read']);
-Route::get('filterByIdBlogCategory', [BlogCategoryController::class, 'filterById']);
+Route::get('filterByIdBlogCategory/{id}', [BlogCategoryController::class, 'filterById']);
 
 //public blog route
 Route::get('search/{key}', [BlogController::class, 'search']);
